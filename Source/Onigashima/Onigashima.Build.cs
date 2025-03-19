@@ -15,6 +15,8 @@ public class Onigashima : ModuleRules
         PrivateDependencyModuleNames.Add("Engine");
         PrivateDependencyModuleNames.Add("InputCore");
 
+		PublicDependencyModuleNames.Add("EnhancedInput");
+
         PublicDependencyModuleNames.Add("UMG");
 
         PublicDependencyModuleNames.Add("Niagara");
