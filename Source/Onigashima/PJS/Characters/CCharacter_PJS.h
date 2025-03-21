@@ -17,6 +17,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UCTestMoveComponent* Movement;
 
+	UPROPERTY(VisibleAnywhere)
+	class UCBuildComponent* Build;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Enhanced")
 	class UInputMappingContext* MappingContext;
