@@ -11,10 +11,13 @@ class ONIGASHIMA_API UCBuildComponent : public UCBaseComponent
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
-	class UInputAction* IA_Build;
+	class UInputAction* IA_OnBuild;
 
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	class UInputAction* IA_Select;
+
+	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+	class UInputAction* IA_Build;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -25,7 +28,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -45,6 +48,9 @@ private:
 	void SpawnMesh();
 	void SetOutLine(bool bGreen);
 
+	void ChangeMesh();
+	void SpawnBuild();
+
 private:
 	class UStaticMeshComponent* Mesh;
 
@@ -52,7 +58,7 @@ private:
 	bool bOnBuildMode = false;
 	bool bCanBuild = false;
 
-	int32 BuildIndex = 0;
+	int32 BuildID = 0;
 
 	FTransform BuildTransform;
 
