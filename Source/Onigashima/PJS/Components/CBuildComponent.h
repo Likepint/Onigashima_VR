@@ -10,16 +10,16 @@ class ONIGASHIMA_API UCBuildComponent : public UCBaseComponent
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Material")
-	TArray<class UMaterialInstance*> Materials;
-
-private:
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	class UInputAction* IA_Build;
 
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	class UInputAction* IA_Select;
-	
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	class UCBuildAsset* BuildAsset;
+
 public:
 	UCBuildComponent();
 
@@ -37,32 +37,25 @@ private:
 
 private:
 	void BuildMode();
-
+	void DelayBuild();
 	void LoopBuild();
 	void StopBuild();
-
-	void Delay();
-
 	void ResetBuild();
 
 	void SpawnMesh();
-	void ChangeMeshOutLine(bool bGreen);
+	void SetOutLine(bool bGreen);
 
 private:
-	class UCameraComponent* Camera;
 	class UStaticMeshComponent* Mesh;
-
-	UPROPERTY(EditAnywhere)
-	class UStaticMesh* foundation;
 
 private:
 	bool bOnBuildMode = false;
 	bool bCanBuild = false;
-	bool bHit;
 
-	int32 BuildID;
+	int32 BuildIndex = 0;
 
 	FTransform BuildTransform;
 
-	FTimerHandle BuildHandle;
+	FTimerHandle hBuild;
+
 };

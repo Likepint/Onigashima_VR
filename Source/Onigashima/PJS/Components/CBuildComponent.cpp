@@ -4,7 +4,7 @@
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Engine/StaticMesh.h"
+#include "PJS/Builds/CBuildAsset.h"
 
 UCBuildComponent::UCBuildComponent()
 {
@@ -32,12 +32,15 @@ void UCBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 void UCBuildComponent::OnBindEnhancedInputSystem(UEnhancedInputComponent* InEnhancedInput)
 {
 	InEnhancedInput->BindAction(IA_Build, ETriggerEvent::Started, this, &UCBuildComponent::BuildMode);
-	//InEnhancedInput->BindAction(IA_Select, ETriggerEvent::Triggered, this, &UCBuildComponent::Select);
+	InEnhancedInput->BindAction(IA_Select, ETriggerEvent::Triggered, this, &UCBuildComponent::Select);
 
 }
 
 void UCBuildComponent::Select(const FInputActionValue& InVal)
 {
+	if (InVal.Get<float>() > 0)
+		++BuildIndex %= BuildAsset->GetMeshCnt();
+	else BuildIndex - 1 < 0 ? BuildIndex = BuildAsset->GetMeshCnt() - 1 : --BuildIndex;
 
 }
 
@@ -46,8 +49,20 @@ void UCBuildComponent::BuildMode()
 	bOnBuildMode = !bOnBuildMode;
 
 	if (bOnBuildMode)
-		LoopBuild();
+		 LoopBuild();
 	else StopBuild();
+
+}
+
+void UCBuildComponent::DelayBuild()
+{
+	if (bOnBuildMode)
+	{
+		auto lambda = [this]() { LoopBuild(); };
+
+		GetWorld()->GetTimerManager().SetTimer(hBuild, lambda, 0.01, true);
+	}
+	else ResetBuild();
 
 }
 
@@ -59,31 +74,19 @@ void UCBuildComponent::LoopBuild()
 	FVector start = location + (forward * 350);
 	FVector end = location + (forward * 1000);
 
-	FHitResult result;
+	TArray<AActor*> actors;
+	FHitResult info;
+	bool bHit = UKismetSystemLibrary::LineTraceSingle(OwnerCharacter->GetWorld(), start, end, ETraceTypeQuery::TraceTypeQuery1, false, actors, EDrawDebugTrace::None, info, true);
 
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(OwnerCharacter);
+	if (bHit) BuildTransform.SetLocation(info.ImpactPoint);
+	else BuildTransform.SetLocation(info.TraceEnd);
 
-	bHit = GetWorld()->LineTraceSingleByChannel(result, start, end, ECC_Visibility, params);
-	if (bHit)
-	{
-		BuildTransform.SetLocation(result.ImpactPoint);
+	if (Mesh) SetOutLine(bHit);
+	else SpawnMesh();
 
-		if (Mesh)
-			ChangeMeshOutLine(true);
-		else SpawnMesh();
+	Mesh->SetStaticMesh(BuildAsset->GetStaticMesh(BuildIndex));
 
-	}
-	else
-	{
-		BuildTransform.SetLocation(result.TraceEnd);
-
-		if (Mesh)
-			ChangeMeshOutLine(false);
-		else SpawnMesh();
-	}
-
-	Delay();
+	DelayBuild();
 
 }
 
@@ -91,26 +94,7 @@ void UCBuildComponent::StopBuild()
 {
 	ResetBuild();
 
-	GetWorld()->GetTimerManager().ClearTimer(BuildHandle);
-
-}
-
-void UCBuildComponent::Delay()
-{
-	if (bOnBuildMode)
-	{
-		auto lambda = [this]()
-			{
-				LoopBuild();
-			};
-
-		GetWorld()->GetTimerManager().SetTimer(BuildHandle, lambda, 0.01, true);
-
-		//FLatentActionInfo info;
-		//UKismetSystemLibrary::Delay(GetWorld(), 0.01, info);
-
-	}
-	else ResetBuild();
+	GetWorld()->GetTimerManager().ClearTimer(hBuild);
 
 }
 
@@ -121,29 +105,25 @@ void UCBuildComponent::ResetBuild()
 
 	if (Mesh)
 	{
-		if (UStaticMeshComponent* mesh = OwnerCharacter->GetComponentByClass<UStaticMeshComponent>())
-			int a = 0;
+		Mesh->DestroyComponent();
+		Mesh = nullptr;
 	}
-
 }
 
 void UCBuildComponent::SpawnMesh()
 {
 	Mesh = Cast<UStaticMeshComponent>(OwnerCharacter->AddComponentByClass(UStaticMeshComponent::StaticClass(), false, BuildTransform, false));
 
-	if (foundation)
-	{
-		Mesh->SetStaticMesh(foundation);
-		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 }
 
-void UCBuildComponent::ChangeMeshOutLine(bool bGreen)
+void UCBuildComponent::SetOutLine(bool bGreen)
 {
 	bCanBuild = false;
 
-	foundation->SetMaterial(0, Materials[bGreen]);
+	for (int32 i = Mesh->GetMaterials().Num() - 1; i >= 0; --i)
+		Mesh->SetMaterial(i, BuildAsset->GetMaterial(bGreen));
 
 	Mesh->SetWorldTransform(BuildTransform);
 
