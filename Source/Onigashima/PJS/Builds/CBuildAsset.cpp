@@ -7,14 +7,14 @@ UMaterialInstance* UCBuildAsset::GetMaterial(bool bGreen)
 
 }
 
-UStaticMesh* UCBuildAsset::GetStaticMesh(int32 InIndex)
+const FBuildStruct& UCBuildAsset::GetStruct(int32 InIndex)
 {
-	return BuildMesh[InIndex];
+	return BuildStruct[InIndex];
 
 }
 
 int32 UCBuildAsset::GetMeshCnt()
 {
-	return BuildMesh.Num();
+	return BuildStruct.Num();
 
 }

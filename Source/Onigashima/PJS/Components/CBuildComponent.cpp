@@ -5,13 +5,15 @@
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "PJS/Builds/CBuildAsset.h"
+#include "PJS/Builds/CBuildMesh.h"
 
 UCBuildComponent::UCBuildComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	CHelpers::GetAsset<UInputAction>(&IA_Build, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_Build_PJS.IA_Build_PJS'");
+	CHelpers::GetAsset<UInputAction>(&IA_OnBuild, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_OnBuild_PJS.IA_OnBuild_PJS'");
 	CHelpers::GetAsset<UInputAction>(&IA_Select, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_Select_PJS.IA_Select_PJS'");
+	CHelpers::GetAsset<UInputAction>(&IA_Build, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_Build_PJS.IA_Build_PJS'");
 
 }
 
@@ -31,16 +33,21 @@ void UCBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCBuildComponent::OnBindEnhancedInputSystem(UEnhancedInputComponent* InEnhancedInput)
 {
-	InEnhancedInput->BindAction(IA_Build, ETriggerEvent::Started, this, &UCBuildComponent::BuildMode);
+	InEnhancedInput->BindAction(IA_OnBuild, ETriggerEvent::Started, this, &UCBuildComponent::BuildMode);
 	InEnhancedInput->BindAction(IA_Select, ETriggerEvent::Triggered, this, &UCBuildComponent::Select);
+	InEnhancedInput->BindAction(IA_Build, ETriggerEvent::Started, this, &UCBuildComponent::SpawnBuild);
 
 }
 
 void UCBuildComponent::Select(const FInputActionValue& InVal)
 {
+	if (!bOnBuildMode) return;
+
 	if (InVal.Get<float>() > 0)
-		++BuildIndex %= BuildAsset->GetMeshCnt();
-	else BuildIndex - 1 < 0 ? BuildIndex = BuildAsset->GetMeshCnt() - 1 : --BuildIndex;
+		++BuildID %= BuildAsset->GetMeshCnt();
+	else BuildID - 1 < 0 ? BuildID = BuildAsset->GetMeshCnt() - 1 : --BuildID;
+
+	ChangeMesh();
 
 }
 
@@ -76,15 +83,17 @@ void UCBuildComponent::LoopBuild()
 
 	TArray<AActor*> actors;
 	FHitResult info;
-	bool bHit = UKismetSystemLibrary::LineTraceSingle(OwnerCharacter->GetWorld(), start, end, ETraceTypeQuery::TraceTypeQuery1, false, actors, EDrawDebugTrace::None, info, true);
+	bool bHit = UKismetSystemLibrary::LineTraceSingle(OwnerCharacter->GetWorld(), start, end, BuildAsset->GetStruct(BuildID).TraceChannel, false, actors, EDrawDebugTrace::None, info, true);
 
-	if (bHit) BuildTransform.SetLocation(info.ImpactPoint);
-	else BuildTransform.SetLocation(info.TraceEnd);
+	bHit ? BuildTransform.SetLocation(info.ImpactPoint) : BuildTransform.SetLocation(info.TraceEnd);
 
-	if (Mesh) SetOutLine(bHit);
-	else SpawnMesh();
+	//if (bHit) BuildTransform.SetLocation(info.ImpactPoint);
+	//else BuildTransform.SetLocation(info.TraceEnd);
 
-	Mesh->SetStaticMesh(BuildAsset->GetStaticMesh(BuildIndex));
+	Mesh ? SetOutLine(bHit) : SpawnMesh();
+
+	//if (Mesh) SetOutLine(bHit);
+	//else SpawnMesh();
 
 	DelayBuild();
 
@@ -108,23 +117,43 @@ void UCBuildComponent::ResetBuild()
 		Mesh->DestroyComponent();
 		Mesh = nullptr;
 	}
+
 }
 
 void UCBuildComponent::SpawnMesh()
 {
 	Mesh = Cast<UStaticMeshComponent>(OwnerCharacter->AddComponentByClass(UStaticMeshComponent::StaticClass(), false, BuildTransform, false));
 
+	Mesh->SetStaticMesh(BuildAsset->GetStruct(BuildID).StaticMesh);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 }
 
 void UCBuildComponent::SetOutLine(bool bGreen)
 {
-	bCanBuild = false;
+	bCanBuild = bGreen;
 
 	for (int32 i = Mesh->GetMaterials().Num() - 1; i >= 0; --i)
 		Mesh->SetMaterial(i, BuildAsset->GetMaterial(bGreen));
 
 	Mesh->SetWorldTransform(BuildTransform);
+
+}
+
+void UCBuildComponent::ChangeMesh()
+{
+	if (Mesh)
+		Mesh->SetStaticMesh(BuildAsset->GetStruct(BuildID).StaticMesh);
+
+}
+
+void UCBuildComponent::SpawnBuild()
+{
+	CheckFalse(bOnBuildMode);
+	CheckFalse(bCanBuild);
+
+	FActorSpawnParameters params;
+
+	OwnerCharacter->GetWorld()->SpawnActor<ACBuildMesh>(BuildAsset->GetStruct(BuildID).Ref, BuildTransform, params);
 
 }
