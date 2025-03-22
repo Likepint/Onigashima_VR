@@ -10,6 +10,10 @@
 #include "CVRPlayerAnim.h"
 #include "Components/StaticMeshComponent.h"
 #include "MotionControllerComponent.h"
+#include "CPick.h"
+#include "CBow.h"
+#include "CSpear.h"
+#include "CAxe.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -78,10 +82,16 @@ AVRPlayer::AVRPlayer()
         IA_ItemInteraction = Temp_ItemInter.Object;
     }
 
-    ConstructorHelpers::FObjectFinder<UInputAction> Temp_ItemTogle(L"/Script/EnhancedInput.InputAction'/Game/ODH/Input/IA_ItemTogle.IA_ItemTogle'");
-    if (Temp_ItemTogle.Succeeded())
+    ConstructorHelpers::FObjectFinder<UInputAction> Temp_ItemIndexPlus(L"/Script/EnhancedInput.InputAction'/Game/ODH/Input/IA_ItemIndexPlus.IA_ItemIndexPlus'");
+    if (Temp_ItemIndexPlus.Succeeded())
     {
-        IA_ItemTogle = Temp_ItemTogle.Object;
+        IA_ItemIndexPlus = Temp_ItemIndexPlus.Object;
+    }
+
+    ConstructorHelpers::FObjectFinder<UInputAction> Temp_ItemIndexMinus(L"/Script/EnhancedInput.InputAction'/Game/ODH/Input/IA_ItemIndexMinus.IA_ItemIndexMinus'");
+    if (Temp_ItemIndexMinus.Succeeded())
+    {
+        IA_ItemIndexMinus = Temp_ItemIndexMinus.Object;
     }
 
     // LeftHand Create
@@ -91,7 +101,7 @@ AVRPlayer::AVRPlayer()
     LeftHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(L"LeftHand");
     LeftHandMesh->SetupAttachment(LeftSceneComp);
 
-    ConstructorHelpers::FObjectFinder<USkeletalMesh> Temp_LeftHand(L"/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_left.SKM_MannyXR_left'");
+    ConstructorHelpers::FObjectFinder<USkeletalMesh> Temp_LeftHand(L"/Script/Engine.SkeletalMesh'/Game/ODH/Characters/MannequinsXR/Meshes/SKM_MannyXR_left.SKM_MannyXR_left'");
     if (Temp_LeftHand.Succeeded())
     {
         LeftHandMesh->SetSkeletalMesh(Temp_LeftHand.Object);
@@ -105,7 +115,7 @@ AVRPlayer::AVRPlayer()
     RightHandMesh = CreateDefaultSubobject<USkeletalMeshComponent>(L"RightHand");
     RightHandMesh->SetupAttachment(RightSceneComp);
 
-    ConstructorHelpers::FObjectFinder<USkeletalMesh> Temp_RightHand(L"/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_right.SKM_MannyXR_right'");
+    ConstructorHelpers::FObjectFinder<USkeletalMesh> Temp_RightHand(L"/Script/Engine.SkeletalMesh'/Game/ODH/Characters/MannequinsXR/Meshes/SKM_MannyXR_right.SKM_MannyXR_right'");
     if (Temp_RightHand.Succeeded())
     {
         RightHandMesh->SetSkeletalMesh(Temp_RightHand.Object);
@@ -159,7 +169,9 @@ void AVRPlayer::BeginPlay()
     Axe->SetVisibility(false);
     Bow->SetVisibility(false);
 
-    mItemState = EItemState::NoItem;
+    //mItemState = EItemState::NoItem;
+
+    ItemArray.Add(nullptr);
 
     LeftHandAnim = Cast<UCVRPlayerAnim>(LeftHandMesh->GetAnimInstance());
     RightHandAnim = Cast<UCVRPlayerAnim>(RightHandMesh->GetAnimInstance());
@@ -172,19 +184,24 @@ void AVRPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    switch (mItemState)
+    if (bRightAbutton && bRightCurl && bRightGrap && !bMeshOn)
     {
-    case EItemState::NoItem:
-    	break;
-    case EItemState::SetSpear:
-        break;
-    case EItemState::SetPick:
-        break;
-    case EItemState::SetAxe:
-        break;
-    case EItemState::SetBow:
-        break;
+        ItemCollisionOnOff(ItemIndex);
+        bMeshOn = true;
     }
+//     switch (mItemState)
+//     {
+//     case EItemState::NoItem:
+//     	break;
+//     case EItemState::SetSpear:
+//         break;
+//     case EItemState::SetPick:
+//         break;
+//     case EItemState::SetAxe:
+//         break;
+//     case EItemState::SetBow:
+//         break;
+//     }
 }
 
 // Called to bind functionality to input
@@ -215,9 +232,10 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         //Item
         InputSystem->BindAction(IA_ItemMenu, ETriggerEvent::Started, this,
             &AVRPlayer::OnItemMenu);
-        InputSystem->BindAction(IA_ItemInteraction, ETriggerEvent::Triggered, this, &AVRPlayer::ItemInter);
+        InputSystem->BindAction(IA_ItemInteraction, ETriggerEvent::Started, this, &AVRPlayer::ItemInter);
         InputSystem->BindAction(IA_ItemInteraction, ETriggerEvent::Completed, this, &AVRPlayer::ItemInterUp);
-        InputSystem->BindAction(IA_ItemTogle, ETriggerEvent::Triggered, this, &AVRPlayer::ItemTogle);
+        InputSystem->BindAction(IA_ItemIndexPlus, ETriggerEvent::Completed, this, &AVRPlayer::ItemIndexPlus);
+        InputSystem->BindAction(IA_ItemIndexMinus, ETriggerEvent::Completed, this, &AVRPlayer::ItemIndexMinus);
     }
 }
 
@@ -249,11 +267,13 @@ void AVRPlayer::LeftIndexCurl(const FInputActionValue& InputValue)
 void AVRPlayer::RightGrap(const FInputActionValue& InputValue)
 {
     AnimSet(3, InputValue.Get<float>(), false);
+    bRightGrap = true;
 }
 
 void AVRPlayer::RightIndexCurl(const FInputActionValue& InputValue)
 {
     AnimSet(4, InputValue.Get<float>(), false);
+    bRightCurl = true;
 }
 
 void AVRPlayer::LeftGrapUp(const FInputActionValue& InputValue)
@@ -269,11 +289,15 @@ void AVRPlayer::LeftIndexCurlUp(const FInputActionValue& InputValue)
 void AVRPlayer::RightGrapUp(const FInputActionValue& InputValue)
 {
     AnimSet(3, InputValue.Get<float>(), false);
+    bRightGrap = false;
+    RightGrapAllCheck();
 }
 
 void AVRPlayer::RightIndexCurlUp(const FInputActionValue& InputValue)
 {
     AnimSet(4, InputValue.Get<float>(), false);
+    bRightCurl = false;
+    RightGrapAllCheck();
 }
 
 void AVRPlayer::AnimSet(int Anim, float Value, bool isMirror)
@@ -313,134 +337,74 @@ void AVRPlayer::OnItemMenu(const struct FInputActionValue& InputValue)
 //After SetVisibility -> SetCollisionEnnabled
 void AVRPlayer::ItemInter(const struct FInputActionValue& InputValue)
 {
-    if (bHandSpear && !Spear->IsVisible())
-    {
-        ItemCollisionOnOff(1);
-    }
-
-    if(bHandPick &&!PickItem->IsVisible())
-    {
-        ItemCollisionOnOff(2);
-    }
-
-    if (bHandAxe && !Axe->IsVisible())
-    {
-        ItemCollisionOnOff(3);
-    }
-
-    if (bHandBow && !Bow->IsVisible())
-    {
-        ItemCollisionOnOff(4);
-    }
-
-
+    bRightAbutton = true;
 }
 
 void AVRPlayer::ItemInterUp(const struct FInputActionValue& InputValue)
 {
-    if (Spear->IsVisible())
-    {
-        ItemCollisionOnOff(1);
-    }
-
-    else if (PickItem->IsVisible())
-    {
-        ItemCollisionOnOff(2);
-    }
-
-    else if (Axe->IsVisible())
-    {
-        ItemCollisionOnOff(3);
-    }
-
-    else if (Bow->IsVisible())
-    {
-        ItemCollisionOnOff(4);
-    }
+    bRightAbutton = false;
+    RightGrapAllCheck();
 }
 
-void AVRPlayer::ItemTogle(const struct FInputActionValue& InputValue)
+void AVRPlayer::ItemIndexPlus(const FInputActionValue& InputValue)
 {
-    bool value = InputValue.Get<bool>();
-
-    //Item All Visible False
     ItemVisibleAllFalse();
 
-    if (value)
+    if (ItemIndex == ItemArray.Num() - 1)
     {
-        if (ItemIndex == ItemArray.Num())
-        {
-            ItemIndex = ItemArray.Num();
-            ItemArray[ItemArray.Num()];
-            //SetItem(ItemArray[ItemIndex]->ItemNum);
-        }
-        ItemArray[ItemIndex + 1];
-        ItemIndex++;
+        ItemIndex = 0;
     }
     else
     {
-        if (ItemIndex == 0)
-        {
-            ItemIndex = ItemArray.Num();
-            ItemArray[ItemArray.Num()];
-        }
-        ItemArray[ ItemIndex - 1 ];
+        ItemIndex++;
+    }
+}
+
+void AVRPlayer::ItemIndexMinus(const FInputActionValue& InputValue)
+{
+    ItemVisibleAllFalse();
+
+    if (ItemIndex == 0)
+    {
+        ItemIndex = ItemArray.Num() - 1;
+    }
+    else
+    {
         ItemIndex--;
     }
 }
 
 void AVRPlayer::SetItem(int ItemNum)
 {
-
+    if (ItemNum == 0)
+    {
+        ItemVisibleAllFalse();
+    }
 }
 
 void AVRPlayer::ItemCollisionOnOff(int ItemNum)
 {
-    switch (mItemState)
+    if (ItemNum == 0)
+        return;
+
+    else if (ItemArray[ItemNum]->IsVisible())
     {
-    case EItemState::SetSpear:
-        if (bSpear && !Spear->IsVisible())
-        {
-            //Spear->SetVisibility(true);
-        }
-        else 
-        {
-            //Spear->SetVisibility(false);
-        }
-        break;
-    case EItemState::SetPick:
-        if (bPick && !PickItem->IsVisible())
-        {
-            //PickItem->SetVisibility(true);
-        }
-        else
-        {
-            //PickItem->SetVisibility(false);
-        }
-        break;
-    case EItemState::SetAxe:
-        if (bAxe && !Axe->IsVisible())
-        {
-            //Axe->SetVisibility(true);
-        }
-        else
-        {
-            //Axe->SetVisibility(false);
-        }
-        break;
-    case EItemState::SetBow:
-        if (bBow && !Bow->IsVisible())
-        {
-            //Bow->SetVisibility(true);
-        }
-        else
-        {
-            //Bow->SetVisibility(false);
-        }
-        break;
-    default:
-        break;
+        ItemArray[ItemNum]->SetVisibility(false);
+        
     }
+
+    else
+    {
+        ItemArray[ItemNum]->SetVisibility(true);
+    }
+}
+
+void AVRPlayer::RightGrapAllCheck()
+{
+    if(ItemIndex != 0)
+        ItemArray[ItemIndex]->SetVisibility(false);
+
+    bMeshOn = false;
 }
 
 void AVRPlayer::TestItemPush()
@@ -450,22 +414,22 @@ void AVRPlayer::TestItemPush()
     switch (num)
     {
     case 1:
-//         ItemArray.Add(Spear);
-//         ItemArray.Add(Axe);
-//         ItemArray.Add(Bow);
-//         ItemArray.Add(PickItem);
+        ItemArray.Add(Spear);
+        ItemArray.Add(Axe);
+        ItemArray.Add(Bow);
+        ItemArray.Add(PickItem);
         break;
     case 2:
-//         ItemArray.Add(Bow);
-//         ItemArray.Add(PickItem);
-//         ItemArray.Add(Axe);
-//         ItemArray.Add(Spear);
+        ItemArray.Add(Bow);
+        ItemArray.Add(PickItem);
+        ItemArray.Add(Axe);
+        ItemArray.Add(Spear);
         break;
     case 3:
-//         ItemArray.Add(PickItem);
-//         ItemArray.Add(Spear);
-//         ItemArray.Add(Axe);
-//         ItemArray.Add(Bow);
+        ItemArray.Add(PickItem);
+        ItemArray.Add(Spear);
+        ItemArray.Add(Axe);
+        ItemArray.Add(Bow);
         break;
     default:
         break;

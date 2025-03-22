@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/StaticMeshComponent.h"
+#include "CItem.h"
 #include "VRPlayer.generated.h"
 
 UENUM()
@@ -37,32 +38,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public: //Camera
+private: //Camera
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* VRCam;
 
-public: //Player Input
- 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputMappingContext* IMC_VRInput;
- 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputAction* IA_Move;
-	UPROPERTY(EditDefaultsOnly, Category = Input)
-	class UInputAction* IA_Turn;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputAction* IA_LeftGrap;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputAction* IA_LeftIdexCurl;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputAction* IA_RightGrap;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputAction* IA_RightIdexCurl;
-	UPROPERTY(EditDefaultsOnly, Category = Input)
-	class UInputAction* IA_ItemMenu;
-	UPROPERTY(EditDefaultsOnly,Category = Input)
-	class UInputAction* IA_ItemInteraction;
-	UPROPERTY(EditDefaultsOnly,Category = Input)
-	class UInputAction* IA_ItemTogle;
 
+private:
 	//moving
 	void Move(const struct FInputActionValue& InputValue);
 	void Turn(const struct FInputActionValue& InputValue);
@@ -86,12 +67,13 @@ public: //Player Input
 	void OnItemMenu(const struct FInputActionValue& InputValue);
 	void ItemInter(const struct FInputActionValue& InputValue);
 	void ItemInterUp(const struct FInputActionValue& InputValue);
-	void ItemTogle(const struct FInputActionValue& InputValue);
+	void ItemIndexPlus(const struct FInputActionValue& InputValue);
+	void ItemIndexMinus(const struct FInputActionValue& InputValue);
 
 	void SetItem(int ItemNum);
 	void ItemCollisionOnOff(int ItemNum);
 
-public: //Hands
+private: //Hands
 	UPROPERTY(EditDefaultsOnly)
 	class UMotionControllerComponent* LeftSceneComp;
 	UPROPERTY(EditDefaultsOnly)
@@ -105,11 +87,11 @@ public: //Hands
 	class UCVRPlayerAnim* LeftHandAnim;
 	class UCVRPlayerAnim* RightHandAnim;
 
-public: //Widget
+private: //Widget
 	UPROPERTY(EditDefaultsOnly)
 	class UWidget* ItemMenuWidget;
 
-public: //Item equipment
+private: //Item equipment
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Spear;
 	UPROPERTY(EditDefaultsOnly)
@@ -119,35 +101,42 @@ public: //Item equipment
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Bow;
 
-	// Get Item?
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = Bool)
-	bool bSpear = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bool)
-	bool bPick = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bool)
-	bool bAxe = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bool)
-	bool bBow = false;
+	bool bRightCurl = false;
+	bool bRightGrap = false;
+	bool bRightAbutton = false;
+	bool bMeshOn = false;
 
-	//Now In Hand Item?
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = Bool)
-	bool bHandSpear = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bool)
-	bool bHandPick = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bool)
-	bool bHandAxe = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bool)
-	bool bHandBow = false;
+	void RightGrapAllCheck();
 
-	TArray<class ACItem*> ItemArray;
+	TArray<UStaticMeshComponent*> ItemArray;
 
 	int ItemIndex = 0;
-
-	//Item State
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FSM)
-	EItemState mItemState = EItemState::NoItem;
 
 	void TestItemPush();
 
 	void ItemVisibleAllFalse();
+
+private: //Player Input
+ 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputMappingContext* IMC_VRInput;
+ 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_Move;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction* IA_Turn;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_LeftGrap;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_LeftIdexCurl;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_RightGrap;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_RightIdexCurl;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction* IA_ItemMenu;
+	UPROPERTY(EditDefaultsOnly,Category = Input)
+	class UInputAction* IA_ItemInteraction;
+	UPROPERTY(EditDefaultsOnly,Category = Input)
+	class UInputAction* IA_ItemIndexPlus;
+	UPROPERTY(EditDefaultsOnly,Category = Input)
+	class UInputAction* IA_ItemIndexMinus;
 };
