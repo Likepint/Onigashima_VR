@@ -1,10 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// 03.21 - 공격 패턴 수행시에는 Roatation 기능 삭제 (들어가 있으면 공격을 피할 수가 없을듯)
+// 03.22 - 평타 공격 패턴이 하나뿐이라 Bite 삭제. 일단 두 개 만들기로 (시간 봐서 돌진공격 추가)
+// 03.23 - 비행상태랑 일반 상태랑 제법 달라서 State를 분리하는게 나을지도?
+//			ㄴ 분리했더니 IsAttack 필요 없어짐. 지움.
+// 03.23 - 비행할때 좌표가 아래에 고정으로 있다 ㅠㅠ (IsFalling이 안됨...) 
+//			ㄴ일단 ISFly로 비행상태 체크하기로
+// 03.23 - 비행 공격마다 높이가 다르다... High / Low로 분리하거나 루트본 끌어치기 배워야 될 것 같음...
 
 #include "KJY/CEnemyFSM.h"
 #include "CEnemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "CKJYDummy.h"
+#include "CEnemyAnim.h"
 
 // Sets default values for this component's properties
 UCEnemyFSM::UCEnemyFSM()
@@ -23,14 +29,19 @@ void UCEnemyFSM::BeginPlay()
 	Super::BeginPlay();
 
 	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), ACKJYDummy::StaticClass());
+	
+	if (!actor) { return; }
+	target = Cast<ACKJYDummy>(actor);
 
-	if (actor)
-	{
-		target = Cast<ACKJYDummy>(actor);
-	}
+	enemy = Cast< ACEnemy>(GetOwner());
+	
+	if (!enemy) { return; }
+	Anim = Cast<UCEnemyAnim>(enemy->GetMesh()->GetAnimInstance());
 
-	me = Cast< ACEnemy>(GetOwner());
 
+	// 혹시 모를 초기화
+	randomAttack = FMath::RandRange(1, TotalAttKinds);
+	attCount = 0;
 }
 
 
@@ -40,46 +51,95 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	//에러코드
-	FString logMsg = UEnum::GetValueAsString(mState);
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, logMsg);
+	//상태 체크
+
+
+#pragma region LogMessageState
+	FString logMsgState = UEnum::GetValueAsString(mState);
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, logMsgState);
+
+	FString logMsgAtt = UEnum::GetValueAsString(mAttState);
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Green, logMsgAtt);
+
+	FString logMsgFly = UEnum::GetValueAsString(mFlyState);
+	GEngine->AddOnScreenDebugMessage(2, 1, FColor::Blue, logMsgFly);
+#pragma endregion
 
 	//스테이트 변경
 	switch (mState)
 	{
-
-	case EEnemyState::Idle	 : { IdleState(); }	break;
-	case EEnemyState::Move	 : { MoveState(); }	break;
-	case EEnemyState::Attack : { AttackState(); }break;
-	case EEnemyState::Bite	 : { BiteState(); }	break;
-	case EEnemyState::Breath : { BreathState(); }	break;
-	case EEnemyState::Fly	 : { FlyState()	; }	break;
-	case EEnemyState::Dead   : { IdleState(); }	break;
-
+	case EEnemyState::Idle		 : { IdleState();		}	break;
+	case EEnemyState::Move		 : { MoveState();		}	break;
+	case EEnemyState::Attack	 : {  }	break;
+	case EEnemyState::Dead		 : { DeadState();		}	break;
+	case EEnemyState::Fly		 : { FlyState ();		}	break;
+	case EEnemyState::FlyAtt	 : {  }	break;
 	}
 
+	switch (mAttState)
+	{
+	case EAttackState::ReturnBase	: {  }	break;
+	case EAttackState::Breath		: { BreathState();		}	break;
+	case EAttackState::Attack_1		: { Attack_1State();	}	break;
+
+	default: break;
+	}
+
+	switch (mFlyState)
+	{
+	case EFlyState::ReturnBase		: {  }	break;
+	//case EFlyState::StartFly		: { /*StartFlyState();*/ }	break;
+	case EFlyState::FlyIdle			: { FlyIdleState();		 }	break;
+	case EFlyState::FMove			: { FMoveState();		 }	break;
+
+	case EFlyState::FBreath			: { FlyBreathState();	 }	break;
+	case EFlyState::FAttack_1		: { FlyAttack_1State();  }	break;
+	case EFlyState::FEndFly			: { EndFlyState();		 }	break;
+	default: break;
+	}
 }
 
+// 대기 모션
 void UCEnemyFSM::IdleState()
 {
 	//적 탐지 프로세스
 	FVector dir = SearchEnemy();
 	currentTime += GetWorld()->DeltaTimeSeconds;
+	
+	if (attCount >= MaxFlyCount){
+		mState = EEnemyState::Fly;
+		Anim->eAnimState = mState;
+		attCount = 0;
 
+		return;
+	}
 
-	// 임시 조건 : currentTime이 IdleTime보다 커졌을 경우 && dir까지의 거리가 탐색 범위보다 좁음
-	if (currentTime > idleDelayTime && dir.Size() < searchRange){
+if (currentTime < idleDelayTime) { return; }
+
+	if (dir.Size() < attackRange) {
+		OnAttackProcess();
+		currentTime = 0.f;
+
+		return;
+	}
+
+	// 임시 조건 : dir까지의 거리가 탐색 범위보다 좁음
+	if (dir.Size() < searchRange){
 		mState = EEnemyState::Move;
+		Anim->eAnimState = mState;
+
 		currentTime = 0.f;
 	}
-}
 
+
+}
 
 
 void UCEnemyFSM::MoveState()
 {
+	TargetRotation();
 	FVector dir = SearchEnemy();
-	me->AddMovementInput(dir);
+	enemy->AddMovementInput(dir);
 
 	if (dir.Size() < attackRange) {
 		OnAttackProcess();
@@ -87,104 +147,259 @@ void UCEnemyFSM::MoveState()
 
 }
 
-void UCEnemyFSM::AttackState()
-{
-	//플레이어 방향으로 고개를 돌리고
-	TargetRotation();
 
-	//시간이 흐르다가 일정 시간 경과시
-	currentTime += GetWorld()->DeltaTimeSeconds;
-
-	//IdleState로 변경
-	if ( currentTime > attackDelyaTime){
-		mState = EEnemyState::Idle;
-	}
-
-}
-
-void UCEnemyFSM::BiteState()
-{
-	//플레이어 방향으로 고개를 돌리고
-	TargetRotation();
-
-	//시간이 흐르다가 일정 시간 경과시
-	currentTime += GetWorld()->DeltaTimeSeconds;
-
-	//IdleState로 변경
-	if (currentTime > attackDelyaTime) {
-		mState = EEnemyState::Idle;
-	}
-
-}
-
-void UCEnemyFSM::BreathState()
-{
-	//플레이어 방향으로 고개를 돌리고
-	TargetRotation();
-
-	//시간이 흐르다가 일정 시간 경과시
-	currentTime += GetWorld()->DeltaTimeSeconds;
-
-	//IdleState로 변경
-	if (currentTime > attackDelyaTime) {
-		mState = EEnemyState::Idle;
-	}
-
-}
-
-//비행 시작
 void UCEnemyFSM::FlyState()
 {
+	Anim->IsFly = true;
+	mFlyState = EFlyState::StartFly;
+	Anim->eFlyState = mFlyState;
 }
 
-//사망
-void UCEnemyFSM::DeadState()
+// 브레스 사용 모션
+void UCEnemyFSM::BreathState()
 {
+
+
+}
+
+
+//앞발 공격 모션
+void UCEnemyFSM::Attack_1State()
+{
+
+	/*
+	
+	//시간이 흐르다가 일정 시간 경과시
+	currentTime += GetWorld()->DeltaTimeSeconds;
+
+	//IdleState로 변경
+	if ( currentTime > attackDelayTime){
+		currentTime = 0.f;
+		EndAttackProcess();
+	}
+	
+	*/
+
+}
+
+//================================================================================================
+//================================================================================================
+//비행 시작 모션
+void UCEnemyFSM::StartFlyState()
+{
+
+
+}
+
+
+void UCEnemyFSM::FlyIdleState()
+{
+	UE_LOG(LogTemp, Warning, TEXT("111111111111"));
+
+	//적 탐지 프로세스
+	FVector dir = SearchEnemy();
+	currentTime += GetWorld()->DeltaTimeSeconds;
+
+
+	//공격 횟수 채우면 착륙으로 변경
+	if (attFlyCount >= MaxLandCount) {
+		mFlyState = EFlyState::FEndFly;
+		Anim->eFlyState = mFlyState;
+		
+		return;
+	}
+
+
+if (currentTime < idleDelayTime) { return; }
+
+	if (dir.Size() < attackRange) {
+		OnAttackProcess();
+		return;
+	}
+
+	// 임시 조건 : currentTime이 IdleTime보다 커졌을 경우 && dir까지의 거리가 탐색 범위보다 좁음
+	if (dir.Size() < searchRange) {
+		mFlyState = EFlyState::FMove;
+		Anim->eFlyState = mFlyState;
+
+		currentTime = 0.f;
+	}
+
+
+}
+
+void UCEnemyFSM::FMoveState()
+{
+	TargetRotation();
+	FVector dir = SearchEnemy();
+	enemy->AddMovementInput(dir);
+
+	if (dir.Size() < attackRange) {
+		OnAttackProcess();
+	}
+
+}
+
+void UCEnemyFSM::FlyBreathState()
+{
+	//시간이 흐르다가 일정 시간 경과시
+	currentTime += GetWorld()->DeltaTimeSeconds;
+
+	//IdleState로 변경
+	if (currentTime > attackDelayTime) {
+		EndAttackProcess();
+		currentTime = 0.f;
+	}
+}
+
+
+
+void UCEnemyFSM::FlyAttack_1State()
+{
+	//시간이 흐르다가 일정 시간 경과시
+	currentTime += GetWorld()->DeltaTimeSeconds;
+
+	//IdleState로 변경
+	if (currentTime > attackDelayTime) {
+		EndAttackProcess();
+	}
+}
+
+// 착지 시점 / 착지 시작할 때를 다르게 해야 할 듯?
+void UCEnemyFSM::EndFlyState()
+{
+
+	/*
+	mState = EEnemyState::Idle;
+	Anim->eAnimState = mState;
+	*/
+
+	Anim->IsFly = false;
 }
 
 //==============================================
 
+//사망 모션
+void UCEnemyFSM::DeadState()
+{
+	
+}
+//==============================================
+
+
+//타겟 방향으로 로테이션
 void UCEnemyFSM::TargetRotation()
 {
 	FVector dir = SearchEnemy();
 
 	FRotator TargetRotation = dir.Rotation();
-	FRotator NewRotation = me->GetActorRotation();
+	FRotator NewRotation	= enemy->GetActorRotation();
 
 	NewRotation.Yaw = TargetRotation.Yaw;
-	me->SetActorRotation(NewRotation);
+	enemy->SetActorRotation(NewRotation);
 }
 
 
+//공격 패턴 랜덤 결정해주는 파트
 void UCEnemyFSM::OnAttackProcess()
 {
 
-	//랜덤 돌려서 Attack, Bite, Breath
-	randomAttack = FMath::RandRange(1,3);
+	//UE_LOG(LogTemp, Warning, TEXT("2222222"));
 
-	switch (randomAttack)
-	{
-	case 1: 
+	if (Anim->IsFly == true){
+		
+		mState = EEnemyState::FlyAtt;
+		Anim->eAnimState = mState;
+
+		switch (randomAttack)
+		{
+		case 1:
+			mFlyState = EFlyState::FBreath;
+			Anim->eFlyState = mFlyState;
+			break;
+
+		case 2:
+			mFlyState = EFlyState::FAttack_1;
+			Anim->eFlyState = mFlyState;
+			break;
+		}
+
+		return;
+	}
+
+
+	else {
 		mState = EEnemyState::Attack;
-		break;
-	case 2:
-		mState = EEnemyState::Bite;
-		break;
-	case 3:
-		mState = EEnemyState::Breath;
-		break;
+		Anim->eAnimState = mState;
+
+		switch (randomAttack)
+		{
+		case 1:
+			mAttState = EAttackState::Breath;
+			Anim->eAttackState = mAttState;
+			break;
+
+		case 2:
+			mAttState = EAttackState::Attack_1;
+			Anim->eAttackState = mAttState;
+			break;
+		}
+	}
+
+
+}
+
+//IsFly 상태에 따라 다름.
+void UCEnemyFSM::EndAttackProcess()
+{
+
+	//비행일 경우
+	if (Anim->IsFly == true){
+		//랜덤 돌려서 Breath, Attack_1 결정
+		++attFlyCount;
+
+		randomAttack = FMath::RandRange(1, FlyTotalAttKinds);
+
+		mFlyState = EFlyState::FlyIdle;
+		Anim->eFlyState = mFlyState;
+		
+		return;
+	}
+
+	//비행이 아닐 경우
+	else{
+		//랜덤 돌려서 Breath, Attack_1 결정
+		++attCount;
+
+		randomAttack = FMath::RandRange(1, TotalAttKinds);
+
+		mState = EEnemyState::Idle;
+		Anim->eAnimState = mState;
+
+		mAttState = EAttackState::ReturnBase;
+		Anim->eAttackState = mAttState;
 	}
 
 }
 
+
+//적 탐지 / 적 방향 리턴
 FVector UCEnemyFSM::SearchEnemy()
 {
+	if ( target == nullptr || enemy == nullptr) { return FVector::ZeroVector; }
 
-	if (target == nullptr || me == nullptr) { return FVector::ZeroVector; }
+	FVector destination		= target->GetActorLocation();
+	FVector dir				= destination - enemy->GetActorLocation();
 
-	FVector destination = target->GetActorLocation();
-	FVector dir = destination - me->GetActorLocation();
+	return dir;
+}
 
-	 return dir;
+
+//==================== Notify 관련 함수들 ====================
+
+void UCEnemyFSM::StartHighFly_END()
+{
+	mFlyState = EFlyState::FlyIdle;
+	Anim->eFlyState = mFlyState;
 }
 
