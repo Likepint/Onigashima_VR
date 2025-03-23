@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "PJS/Builds/CBuildAsset.h"
 #include "PJS/Builds/CBuildMesh.h"
+#include "Components/BoxComponent.h"
 
 UCBuildComponent::UCBuildComponent()
 {
@@ -90,10 +91,24 @@ void UCBuildComponent::LoopBuild()
 	//if (bHit) BuildTransform.SetLocation(info.ImpactPoint);
 	//else BuildTransform.SetLocation(info.TraceEnd);
 
-	Mesh ? SetOutLine(bHit) : SpawnMesh();
-
 	//if (Mesh) SetOutLine(bHit);
 	//else SpawnMesh();
+
+	//Mesh ? SetOutLine(bHit) : SpawnMesh();
+
+	if (Mesh)
+	{
+		FDetectBuild detected = GetDetectBuild(info.GetActor(), info.GetComponent());
+
+		if (detected.bFound)
+		{
+			BuildTransform = detected.Transform;
+			BuildTransform.SetLocation(BuildTransform.GetLocation() - FVector(0, 0, Mesh->GetStaticMesh()->GetBounds().BoxExtent.Z));
+		}
+
+		SetOutLine(bHit);
+	}
+	else SpawnMesh();
 
 	DelayBuild();
 
@@ -155,5 +170,27 @@ void UCBuildComponent::SpawnBuild()
 	FActorSpawnParameters params;
 
 	OwnerCharacter->GetWorld()->SpawnActor<ACBuildMesh>(BuildAsset->GetStruct(BuildID).Ref, BuildTransform, params);
+
+}
+
+FDetectBuild UCBuildComponent::GetDetectBuild(class AActor* InHitActor, class UPrimitiveComponent* InHitComponent)
+{
+	ACBuildMesh* mesh = Cast<ACBuildMesh>(InHitActor);
+	CheckNullResult(mesh, FDetectBuild());
+
+	TArray<UBoxComponent*> boxes = mesh->ReturnBoxes();
+
+	bool bLocalFound = false;
+
+	for (const auto& box : boxes)
+	{
+		if (box != InHitComponent) continue;
+
+		bLocalFound = true;
+
+		break;
+	}
+	
+	return FDetectBuild(bLocalFound, InHitComponent->GetComponentTransform());
 
 }

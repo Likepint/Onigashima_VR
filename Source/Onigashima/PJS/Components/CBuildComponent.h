@@ -4,6 +4,18 @@
 #include "PJS/Components/CBaseComponent.h"
 #include "CBuildComponent.generated.h"
 
+USTRUCT()
+struct FDetectBuild
+{
+	GENERATED_BODY()
+
+public:
+	bool bFound;
+
+	FTransform Transform;
+
+};
+
 UCLASS()
 class ONIGASHIMA_API UCBuildComponent : public UCBaseComponent
 {
@@ -50,6 +62,8 @@ private:
 
 	void ChangeMesh();
 	void SpawnBuild();
+
+	FDetectBuild GetDetectBuild(class AActor* InHitActor, class UPrimitiveComponent* InHitComponent);
 
 private:
 	class UStaticMeshComponent* Mesh;
