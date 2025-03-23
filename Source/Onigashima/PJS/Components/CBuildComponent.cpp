@@ -15,6 +15,7 @@ UCBuildComponent::UCBuildComponent()
 	CHelpers::GetAsset<UInputAction>(&IA_OnBuild, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_OnBuild_PJS.IA_OnBuild_PJS'");
 	CHelpers::GetAsset<UInputAction>(&IA_Select, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_Select_PJS.IA_Select_PJS'");
 	CHelpers::GetAsset<UInputAction>(&IA_Build, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_Build_PJS.IA_Build_PJS'");
+	CHelpers::GetAsset<UInputAction>(&IA_Rotate, "/Script/EnhancedInput.InputAction'/Game/PJS/Inputs/IA_Rotate_PJS.IA_Rotate_PJS'");
 
 }
 
@@ -35,30 +36,64 @@ void UCBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 void UCBuildComponent::OnBindEnhancedInputSystem(UEnhancedInputComponent* InEnhancedInput)
 {
 	InEnhancedInput->BindAction(IA_OnBuild, ETriggerEvent::Started, this, &UCBuildComponent::BuildMode);
-	InEnhancedInput->BindAction(IA_Select, ETriggerEvent::Triggered, this, &UCBuildComponent::Select);
+	InEnhancedInput->BindAction(IA_Select, ETriggerEvent::Triggered, this, &UCBuildComponent::SelectOrRotate);
 	InEnhancedInput->BindAction(IA_Build, ETriggerEvent::Started, this, &UCBuildComponent::SpawnBuild);
+	InEnhancedInput->BindAction(IA_Rotate, ETriggerEvent::Started, this, &UCBuildComponent::Rotate);
+	InEnhancedInput->BindAction(IA_Rotate, ETriggerEvent::Completed, this, &UCBuildComponent::Rotate);
 
 }
 
-void UCBuildComponent::Select(const FInputActionValue& InVal)
+void UCBuildComponent::BuildMode(const struct FInputActionValue& InVal)
+{
+	bOnBuildMode = !bOnBuildMode;
+
+	if (bOnBuildMode)
+		LoopBuild();
+	else StopBuild();
+
+}
+
+void UCBuildComponent::SelectOrRotate(const FInputActionValue& InVal)
 {
 	if (!bOnBuildMode) return;
 
-	if (InVal.Get<float>() > 0)
-		++BuildID %= BuildAsset->GetMeshCnt();
-	else BuildID - 1 < 0 ? BuildID = BuildAsset->GetMeshCnt() - 1 : --BuildID;
+	if (bRotate)
+	{
+		//FRotator rot = Mesh->GetComponentRotation() + FRotator(0, InVal.Get<float>(), 0);
+
+		//BuildTransform.SetRotation(FQuat(rot));
+
+		Mesh->AddWorldRotation(FQuat(FRotator(0, InVal.Get<float>() * 5, 0)));
+
+		BuildTransform.SetRotation(Mesh->GetComponentQuat());
+
+		return;
+	}
+	else
+	{
+		if (InVal.Get<float>() > 0)
+			++BuildID %= BuildAsset->GetMeshCnt();
+		else BuildID - 1 < 0 ? BuildID = BuildAsset->GetMeshCnt() - 1 : --BuildID;
+	}
 
 	ChangeMesh();
 
 }
 
-void UCBuildComponent::BuildMode()
+void UCBuildComponent::Rotate(const FInputActionValue& InVal)
 {
-	bOnBuildMode = !bOnBuildMode;
+	bRotate = !bRotate;
 
-	if (bOnBuildMode)
-		 LoopBuild();
-	else StopBuild();
+}
+
+void UCBuildComponent::SpawnBuild(const struct FInputActionValue& InVal)
+{
+	CheckFalse(bOnBuildMode);
+	CheckFalse(bCanBuild);
+
+	FActorSpawnParameters params;
+
+	OwnerCharacter->GetWorld()->SpawnActor<ACBuildMesh>(BuildAsset->GetStruct(BuildID).Ref, BuildTransform, params);
 
 }
 
@@ -159,17 +194,6 @@ void UCBuildComponent::ChangeMesh()
 {
 	if (Mesh)
 		Mesh->SetStaticMesh(BuildAsset->GetStruct(BuildID).StaticMesh);
-
-}
-
-void UCBuildComponent::SpawnBuild()
-{
-	CheckFalse(bOnBuildMode);
-	CheckFalse(bCanBuild);
-
-	FActorSpawnParameters params;
-
-	OwnerCharacter->GetWorld()->SpawnActor<ACBuildMesh>(BuildAsset->GetStruct(BuildID).Ref, BuildTransform, params);
 
 }
 
