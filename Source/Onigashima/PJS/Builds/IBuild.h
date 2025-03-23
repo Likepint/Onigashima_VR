@@ -16,6 +16,6 @@ class ONIGASHIMA_API IIBuild
 	GENERATED_BODY()
 
 public:
-	//virtual TArray<class UBoxComponent> ReturnBoxes() { };
+	virtual TArray<class UBoxComponent*> ReturnBoxes();
 
 };
