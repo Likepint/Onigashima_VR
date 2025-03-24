@@ -11,13 +11,20 @@ ACEnemy::ACEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 
 	FSM = CreateDefaultSubobject<UCEnemyFSM>(TEXT("FSM"));
+
+	ConstructorHelpers::FClassFinder<UAnimInstance>tmpAnim(TEXT("/Script/Engine.AnimBlueprint'/Game/KJY/ABP_Enemy.ABP_Enemy'"));
+
+	if ( tmpAnim.Succeeded() ){
+		GetMesh()->SetAnimInstanceClass(tmpAnim.Class);
+	}
+
 }
 
 // Called when the game starts or when spawned
 void ACEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame

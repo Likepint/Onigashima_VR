@@ -95,11 +95,23 @@ private: //Item equipment
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Spear;
 	UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* SpearColli;
+
+	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* PickItem;
+	/*UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* PickColli;*/
+
+
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Axe;
 	UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* AxeColli;
+
+	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Bow;
+	/*UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* BowColli;*/
 
 	bool bRightCurl = false;
 	bool bRightGrap = false;
@@ -109,6 +121,9 @@ private: //Item equipment
 	void RightGrapAllCheck();
 
 	TArray<UStaticMeshComponent*> ItemArray;
+
+	//현재 테스트 중
+	TArray<class ACItem*> GetItems;
 
 	int ItemIndex = 0;
 

@@ -4,6 +4,8 @@
 #include "ODH/CAxe.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Global.h"
+
 
 // Sets default values
 ACAxe::ACAxe()
@@ -15,6 +17,12 @@ ACAxe::ACAxe()
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(L"Mesh");
 	MeshComp->SetupAttachment(CollisionComp);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Axe(L"/Script/Engine.StaticMesh'/Game/ODH/Axe_ueqgcaifa/Medium/ueqgcaifa_tier_2.ueqgcaifa_tier_2'");
+
+	if (Temp_Axe.Succeeded())
+	{
+		MeshComp->SetStaticMesh(Temp_Axe.Object);
+	}
 
 	ItemNum = 3;
 }

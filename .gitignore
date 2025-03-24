@@ -4,8 +4,13 @@
 
 Binaries/
 
+Content/StarterContent/
+package/
+Plugins/
+
 DerivedDataCache/
 Intermediate/
 Saved/
 
 .vsconfig
+

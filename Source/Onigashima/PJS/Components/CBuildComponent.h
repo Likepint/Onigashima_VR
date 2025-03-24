@@ -4,6 +4,18 @@
 #include "PJS/Components/CBaseComponent.h"
 #include "CBuildComponent.generated.h"
 
+USTRUCT()
+struct FDetectBuild
+{
+	GENERATED_BODY()
+
+public:
+	bool bFound;
+
+	FTransform Transform;
+
+};
+
 UCLASS()
 class ONIGASHIMA_API UCBuildComponent : public UCBaseComponent
 {
@@ -18,6 +30,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	class UInputAction* IA_Build;
+
+	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+	class UInputAction* IA_Rotate;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -36,10 +51,12 @@ public:
 	virtual void OnBindEnhancedInputSystem(class UEnhancedInputComponent* InEnhancedInput) override;
 
 private:
-	void Select(const struct FInputActionValue& InVal);
+	void BuildMode(const struct FInputActionValue& InVal);
+	void SpawnBuild(const struct FInputActionValue& InVal);
+	void SelectOrRotate(const struct FInputActionValue& InVal);
+	void Rotate(const struct FInputActionValue& InVal);
 
 private:
-	void BuildMode();
 	void DelayBuild();
 	void LoopBuild();
 	void StopBuild();
@@ -49,7 +66,9 @@ private:
 	void SetOutLine(bool bGreen);
 
 	void ChangeMesh();
-	void SpawnBuild();
+
+public:
+	FDetectBuild GetDetectBuild(class AActor* InHitActor, class UPrimitiveComponent* InHitComponent);
 
 private:
 	class UStaticMeshComponent* Mesh;
@@ -63,5 +82,7 @@ private:
 	FTransform BuildTransform;
 
 	FTimerHandle hBuild;
+
+	bool bRotate = false;
 
 };
