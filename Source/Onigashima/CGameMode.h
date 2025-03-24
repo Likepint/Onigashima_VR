@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
@@ -8,5 +8,8 @@ UCLASS()
 class ONIGASHIMA_API ACGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	ACGameMode();
 
 };

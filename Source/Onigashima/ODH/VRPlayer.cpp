@@ -1,9 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ODH/VRPlayer.h"
 #include "Global.h"
 #include "Camera/CameraComponent.h"
+#include "PJS/Components/CBuildComponent.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputMappingContext.h"
@@ -27,6 +28,8 @@ AVRPlayer::AVRPlayer()
     VRCam->SetupAttachment(RootComponent);
     //VRCam->SetRelativeLocation(FVector(0, 0, 70));
     VRCam->bUsePawnControlRotation = true;
+
+    CHelpers::CreateActorComponent<UCBuildComponent>(this, &Build, "Build");
 
     //Input Setting
     ConstructorHelpers::FObjectFinder<UInputMappingContext> Temp_IMC(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/ODH/Input/IMC_PlayerINput.IMC_PlayerInput'"));
@@ -260,6 +263,9 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         InputSystem->BindAction(IA_ItemInteraction, ETriggerEvent::Completed, this, &AVRPlayer::ItemInterUp);
         InputSystem->BindAction(IA_ItemIndexPlus, ETriggerEvent::Completed, this, &AVRPlayer::ItemIndexPlus);
         InputSystem->BindAction(IA_ItemIndexMinus, ETriggerEvent::Completed, this, &AVRPlayer::ItemIndexMinus);
+
+        // Build
+        Build->OnBindEnhancedInputSystem(InputSystem);
     }
 }
 
@@ -351,11 +357,11 @@ void AVRPlayer::AnimSet(int Anim, float Value, bool isMirror)
 
 void AVRPlayer::OnItemMenu(const struct FInputActionValue& InputValue)
 {
-    //ÅÇ ¶Ç´Â ¿À¸¥ÂÊ ½ºÆ½ ¹öÆ°ÀÌ ´­¸°´Ù¸é
-    //¾ÆÀÌÅÛ UI Ã¢ÀÌ ¿­¸®Áö ¾ÊÀº »óÅÂÀÌ¸é
+    //íƒ­ ë˜ëŠ” ì˜¤ë¥¸ìª½ ìŠ¤í‹± ë²„íŠ¼ì´ ëˆŒë¦°ë‹¤ë©´
+    //ì•„ì´í…œ UI ì°½ì´ ì—´ë¦¬ì§€ ì•Šì€ ìƒíƒœì´ë©´
     //if()
 
-    //¾ÆÀÌÅÛ UIÃ¢À» ¶ç¿öÁÜ
+    //ì•„ì´í…œ UIì°½ì„ ë„ì›Œì¤Œ
 }
 
 //After SetVisibility -> SetCollisionEnnabled
