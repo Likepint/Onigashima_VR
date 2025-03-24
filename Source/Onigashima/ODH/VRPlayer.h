@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,17 +11,21 @@
 UENUM()
 enum class EItemState :uint8
 {
-	NoItem UMETA(DisplayName = "¸Ç¼Õ"),
-	SetSpear UMETA(DisplayName = "Ã¢"),
-	SetPick UMETA(DisplayName = "°î±ªÀÌ"),
-	SetAxe UMETA(DisplayName = "µµ³¢"),
-	SetBow UMETA(DisplayName = "È°")
+	NoItem UMETA(DisplayName = "ë§¨ì†"),
+	SetSpear UMETA(DisplayName = "ì°½"),
+	SetPick UMETA(DisplayName = "ê³¡ê´­ì´"),
+	SetAxe UMETA(DisplayName = "ë„ë¼"),
+	SetBow UMETA(DisplayName = "í™œ")
 };
 
 UCLASS()
 class ONIGASHIMA_API AVRPlayer : public ACharacter
 {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY(VisibleAnywhere)
+	class UCBuildComponent* Build;
 
 public:
 	// Sets default values for this character's properties
@@ -122,7 +126,7 @@ private: //Item equipment
 
 	TArray<UStaticMeshComponent*> ItemArray;
 
-	//ÇöÀç Å×½ºÆ® Áß
+	//í˜„ì¬ í…ŒìŠ¤íŠ¸ ì¤‘
 	TArray<class ACItem*> GetItems;
 
 	int ItemIndex = 0;

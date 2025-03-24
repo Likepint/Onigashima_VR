@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -39,7 +39,7 @@ private:
 	//UPROPERTY(VisibleAnywhere)
 	//class UBoxComponent* Box4;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	TArray<class UBoxComponent*> BoxComponents;
 	
 public:
@@ -57,8 +57,8 @@ public:
 	TArray<class UBoxComponent*> ReturnBoxes() override;
 
 private:
-	// ½ºÅÂÆ½ ¸Ş½Ã ±âÁØÀ¸·Î À§¿¡¼­ ¾Æ·¡¸¦ º¸´Â ±âÁØ
-	// ¿À¸¥ÂÊ, ¾Æ·¡ÂÊ, ¿ŞÂÊ, À§ÂÊ
+	// ìŠ¤íƒœí‹± ë©”ì‹œ ê¸°ì¤€ìœ¼ë¡œ ìœ„ì—ì„œ ì•„ë˜ë¥¼ ë³´ëŠ” ê¸°ì¤€
+	// ì˜¤ë¥¸ìª½, ì•„ë˜ìª½, ì™¼ìª½, ìœ„ìª½
 	TArray<FAxisVal> Axis = { {2, 0}, {0, 2}, {-2, 0}, {0, -2} };
 
 };

@@ -1,4 +1,4 @@
-#include "PJS/Builds/CBuildMesh.h"
+ï»¿#include "PJS/Builds/CBuildMesh.h"
 #include "Global.h"
 #include "Components/BoxComponent.h"
 
@@ -13,16 +13,16 @@ ACBuildMesh::ACBuildMesh()
 	//CHelpers::CreateComponent<UBoxComponent>(this, &Box3, "Box3", StaticMesh);
 	//CHelpers::CreateComponent<UBoxComponent>(this, &Box4, "Box4", StaticMesh);
 
-	for (int32 i = 0; i < 4; ++i)
+	for (int32 i = 0; i < 8; ++i)
 	{
 		FString name = FString::Printf(TEXT("Box%d"), i + 1);
-		// ÀÌ¸§À» Box 1 ~ 4·Î ¼³Á¤
+		// ì´ë¦„ì„ Box 1 ~ 4ë¡œ ì„¤ì •
 		UBoxComponent* box = CreateDefaultSubobject<UBoxComponent>(*name);
-		// BoxComponent¸¦ À§¿¡¼­ ¼³Á¤ÇÑ ÀÌ¸§À¸·Î ÁöÁ¤ÇÏ¿© »ý¼º
+		// BoxComponentë¥¼ ìœ„ì—ì„œ ì„¤ì •í•œ ì´ë¦„ìœ¼ë¡œ ì§€ì •í•˜ì—¬ ìƒì„±
 
 		box->SetupAttachment(StaticMesh);
 
-		// BoxComponents ¹è¿­¿¡ Ãß°¡
+		// BoxComponents ë°°ì—´ì— ì¶”ê°€
 		BoxComponents.Add(box);
 	}
 
@@ -34,7 +34,7 @@ void ACBuildMesh::PostInitializeComponents()
 
 	CheckNull(StaticMesh);
 
-	// ÇöÀçÀÇ ½ºÅÂÆ½¸Þ½ÃÀÇ Extent ·Îµå
+	// í˜„ìž¬ì˜ ìŠ¤íƒœí‹±ë©”ì‹œì˜ Extent ë¡œë“œ
 	FVector extent = StaticMesh->GetStaticMesh()->GetBounds().BoxExtent;
 
 	//Box1->SetRelativeLocation(FVector(extent.X * 2, 0, extent.Z));
@@ -51,9 +51,9 @@ void ACBuildMesh::PostInitializeComponents()
 
 	for (int i = 0; i < Axis.Num(); ++i)
 	{
-		// Extent¸¸Å­ »ó´ë À§Ä¡ ÀÌµ¿
+		// Extentë§Œí¼ ìƒëŒ€ ìœ„ì¹˜ ì´ë™
 		BoxComponents[i]->SetRelativeLocation(FVector(extent.X * Axis[i].x, extent.Y * Axis[i].y, extent.Z));
-		// ¹Ú½º Å©±â¸¦ ½ºÅÂÆ½¸Þ½ÃÀÇ Extent¿Í µ¿ÀÏÇÏ°Ô ¼³Á¤
+		// ë°•ìŠ¤ í¬ê¸°ë¥¼ ìŠ¤íƒœí‹±ë©”ì‹œì˜ Extentì™€ ë™ì¼í•˜ê²Œ ì„¤ì •
 		BoxComponents[i]->SetBoxExtent(extent);
 
 	}
