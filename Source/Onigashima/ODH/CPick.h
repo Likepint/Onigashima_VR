@@ -22,6 +22,4 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* MeshComp;
-
-	
 };

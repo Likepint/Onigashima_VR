@@ -14,6 +14,7 @@
 #include "CBow.h"
 #include "CSpear.h"
 #include "CAxe.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -132,7 +133,19 @@ AVRPlayer::AVRPlayer()
     //equipment
     Spear = CreateDefaultSubobject<UStaticMeshComponent>(L"SpearComp");
     Spear->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    Spear->SetRelativeScale3D(FVector(0.2f));
+
+    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Spear(L"/Script/Engine.StaticMesh'/Game/ODH/Old_Wooden_Pole_ueqfdi0ga/Old_Wooden_Pole_ueqfdi0ga_Low.Old_Wooden_Pole_ueqfdi0ga_Low'");
+    if (Temp_Spear.Succeeded())
+    {
+        Spear->SetStaticMesh(Temp_Spear.Object);
+        Spear->SetRelativeScale3D(FVector(0.2f));
+        Spear->SetRelativeLocationAndRotation(FVector(-29, 0, 0), FRotator(0, 0, 90));
+
+        SpearColli = CreateDefaultSubobject<UBoxComponent>(L"SpearCollision");
+        SpearColli->SetupAttachment(Spear);
+        SpearColli->SetRelativeLocation(FVector(0, 160, 5));
+        SpearColli->SetBoxExtent(FVector(8.156206f, 77.76204f, 7.885468f));
+    }
 
     PickItem = CreateDefaultSubobject<UStaticMeshComponent>(L"PickComp");
     PickItem->SetupAttachment(RightHandMesh, L"hand_rSocket");
@@ -140,10 +153,21 @@ AVRPlayer::AVRPlayer()
 
     Axe = CreateDefaultSubobject<UStaticMeshComponent>(L"AxeComp");
     Axe->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    Axe->SetRelativeScale3D(FVector(0.2f));
+    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Axe(L"/Script/Engine.StaticMesh'/Game/ODH/Axe_ueqgcaifa/Medium/ueqgcaifa_tier_2.ueqgcaifa_tier_2'");
+    if (Temp_Axe.Succeeded())
+    {
+        Axe->SetStaticMesh(Temp_Axe.Object);
+        Axe->SetRelativeLocationAndRotation(FVector(-10, 0, 0), FRotator(90, 0, 180));
+
+		AxeColli = CreateDefaultSubobject<UBoxComponent>(L"AxeCollision");
+		AxeColli->SetupAttachment(Axe);
+		AxeColli->SetRelativeLocationAndRotation(FVector(17, 4.838387f, 2.258435f), FRotator(0, 180, 90));
+		AxeColli->SetBoxExtent(FVector(5.524121f, 1.973751f, 7.189121f));
+    }
+
 
     Bow = CreateDefaultSubobject<UStaticMeshComponent>(L"BowComp");
-    Bow->SetupAttachment(RightHandMesh, L"hand_rSocket");
+    Bow->SetupAttachment(LeftHandMesh, L"hand_lSocket");
     Bow->SetRelativeScale3D(FVector(0.2f));
 }
 

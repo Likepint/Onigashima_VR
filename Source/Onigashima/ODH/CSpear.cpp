@@ -13,10 +13,16 @@ ACSpear::ACSpear()
 
 	CollisionComp = CreateDefaultSubobject<UBoxComponent>(L"Collision");
 	SetRootComponent(CollisionComp);
+	CollisionComp->SetBoxExtent(FVector(6.677329f, 77.277551f, 8.897527f));
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(L"Mesh");
 	MeshComp->SetupAttachment(CollisionComp);
 
-	ItemNum = 1;
+// 	ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Spear(L"/Script/Engine.StaticMesh'/Game/ODH/Old_Wooden_Pole_ueqfdi0ga/Raw/ueqfdi0ga_tier_0.ueqfdi0ga_tier_0'");
+// 	if (Temp_Spear.Succeeded())
+// 	{
+// 		MeshComp->SetStaticMesh(Temp_Spear.Object);
+// 		MeshComp->SetRelativeLocation(FVector(3, -160, -7));
+// 	}
 }
 
