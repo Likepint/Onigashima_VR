@@ -16,6 +16,7 @@
 #include "CSpear.h"
 #include "CAxe.h"
 #include "Components/BoxComponent.h"
+#include "CArrow.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -26,7 +27,6 @@ AVRPlayer::AVRPlayer()
     //Camera Create
     VRCam = CreateDefaultSubobject<UCameraComponent>(L"VRCam");
     VRCam->SetupAttachment(RootComponent);
-    //VRCam->SetRelativeLocation(FVector(0, 0, 70));
     VRCam->bUsePawnControlRotation = true;
 
     CHelpers::CreateActorComponent<UCBuildComponent>(this, &Build, "Build");
@@ -98,6 +98,18 @@ AVRPlayer::AVRPlayer()
         IA_ItemIndexMinus = Temp_ItemIndexMinus.Object;
     }
 
+    ConstructorHelpers::FObjectFinder<UInputAction> Temp_Jump(L"/Script/EnhancedInput.InputAction'/Game/ODH/Input/IA_VRJump.IA_VRJump'");
+    if (Temp_Jump.Succeeded())
+    {
+        IA_Jump = Temp_Jump.Object;
+    }
+
+    ConstructorHelpers::FObjectFinder<UInputAction> Temp_YButton(L"/Script/EnhancedInput.InputAction'/Game/ODH/Input/IA_YButton.IA_YButton'");
+    if (Temp_YButton.Succeeded())
+    {
+        IA_YButton = Temp_YButton.Object;
+    }
+
     // LeftHand Create
     LeftSceneComp = CreateDefaultSubobject<UMotionControllerComponent>(L"ControllerLftGrip");
     LeftSceneComp->SetupAttachment(RootComponent);
@@ -126,13 +138,6 @@ AVRPlayer::AVRPlayer()
         RightHandMesh->SetRelativeRotation(FRotator(0, -90, 0));
     }
 
-    //Widget
-//     ConstructorHelpers::FObjectFinder<UWidget> Temp_ItemWidget(L"/Script/UMGEditor.WidgetBlueprint'/Game/ODH/Widget/WBP_ItemMenu.WBP_ItemMenu'");
-//     if (Temp_ItemWidget.Succeeded())
-//     {
-//         ItemMenuWidget = Temp_ItemWidget.Object;
-//     }
-
     //equipment
     Spear = CreateDefaultSubobject<UStaticMeshComponent>(L"SpearComp");
     Spear->SetupAttachment(RightHandMesh, L"hand_rSocket");
@@ -143,11 +148,12 @@ AVRPlayer::AVRPlayer()
         Spear->SetStaticMesh(Temp_Spear.Object);
         Spear->SetRelativeScale3D(FVector(0.2f));
         Spear->SetRelativeLocationAndRotation(FVector(-29, 0, 0), FRotator(0, 0, 90));
-
+        
         SpearColli = CreateDefaultSubobject<UBoxComponent>(L"SpearCollision");
         SpearColli->SetupAttachment(Spear);
         SpearColli->SetRelativeLocation(FVector(0, 160, 5));
         SpearColli->SetBoxExtent(FVector(8.156206f, 77.76204f, 7.885468f));
+        SpearColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::SpearOverlap);
     }
 
     PickItem = CreateDefaultSubobject<UStaticMeshComponent>(L"PickComp");
@@ -166,11 +172,12 @@ AVRPlayer::AVRPlayer()
 		AxeColli->SetupAttachment(Axe);
 		AxeColli->SetRelativeLocationAndRotation(FVector(17, 4.838387f, 2.258435f), FRotator(0, 180, 90));
 		AxeColli->SetBoxExtent(FVector(5.524121f, 1.973751f, 7.189121f));
+        AxeColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::AxeOverlap);
     }
 
 
     Bow = CreateDefaultSubobject<UStaticMeshComponent>(L"BowComp");
-    Bow->SetupAttachment(LeftHandMesh, L"hand_lSocket");
+    Bow->SetupAttachment(RightHandMesh, L"hand_rSocket");
     Bow->SetRelativeScale3D(FVector(0.2f));
 }
 
@@ -191,19 +198,26 @@ void AVRPlayer::BeginPlay()
         }
     }
 
-    Spear->SetVisibility(false);
-    PickItem->SetVisibility(false);
-    Axe->SetVisibility(false);
-    Bow->SetVisibility(false);
-
-    //mItemState = EItemState::NoItem;
+    ItemVisibleAllFalse();
 
     ItemArray.Add(nullptr);
 
     LeftHandAnim = Cast<UCVRPlayerAnim>(LeftHandMesh->GetAnimInstance());
     RightHandAnim = Cast<UCVRPlayerAnim>(RightHandMesh->GetAnimInstance());
 
+    CurHealth = MaxHealth;
+
     TestItemPush();
+
+    for (int32 i = 0; i < MaxArrowCnt; i++)
+    {
+        FActorSpawnParameters params;
+        params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+        ACArrow* Ar = GetWorld()->SpawnActor<ACArrow>(Arrow,params);
+        Ar->SetActive(false);
+        ArrowPool.Add(Ar);
+    }
 }
 
 // Called every frame
@@ -211,24 +225,41 @@ void AVRPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    if (bRightAbutton && bRightCurl && bRightGrap && !bMeshOn)
+    if (bRightBbutton && bRightTrigger && bRightGrap && !bMeshOn)
     {
         ItemCollisionOnOff(ItemIndex);
         bMeshOn = true;
     }
-//     switch (mItemState)
+
+    if (Bow->IsVisible() && !bFindArrow && bLeftTrigger && bLeftGrap)
+    {
+        AimArrow();
+    }
+    
+//     if (Bow->IsVisible() && !SpawnArrow && bLeftTrigger && bLeftGrap)
 //     {
-//     case EItemState::NoItem:
-//     	break;
-//     case EItemState::SetSpear:
-//         break;
-//     case EItemState::SetPick:
-//         break;
-//     case EItemState::SetAxe:
-//         break;
-//     case EItemState::SetBow:
-//         break;
+//         SpawnArrow = GetWorld()->SpawnActor<ACArrow>();
+//         SpawnArrow->AttachToComponent(RightHandMesh, FAttachmentTransformRules::KeepRelativeTransform, L"index_03_lSocket");
 //     }
+
+    switch (PlayerState)
+    {
+    case EItemState::NoItem:
+        ATK = 10;
+    	break;
+    case EItemState::SetSpear:
+        ATK = 20;
+        break;
+    case EItemState::SetPick:
+        ATK = 16;
+        break;
+    case EItemState::SetAxe:
+        ATK = 18;
+        break;
+    case EItemState::SetBow:
+        ATK = 20;
+        break;
+    }
 }
 
 // Called to bind functionality to input
@@ -243,6 +274,7 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         //Moving
         InputSystem->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AVRPlayer::Move);
         InputSystem->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &AVRPlayer::Turn);
+        InputSystem->BindAction(IA_Jump, ETriggerEvent::Started, this, &AVRPlayer::VRJump);
 
         // Idle -> Graps Animation
         InputSystem->BindAction(IA_LeftGrap, ETriggerEvent::Triggered, this, &AVRPlayer::LeftGrap);
@@ -264,6 +296,9 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         InputSystem->BindAction(IA_ItemIndexPlus, ETriggerEvent::Completed, this, &AVRPlayer::ItemIndexPlus);
         InputSystem->BindAction(IA_ItemIndexMinus, ETriggerEvent::Completed, this, &AVRPlayer::ItemIndexMinus);
 
+        InputSystem->BindAction(IA_YButton, ETriggerEvent::Started, this, &AVRPlayer::YButtonDown);
+        InputSystem->BindAction(IA_YButton, ETriggerEvent::Completed, this, &AVRPlayer::YButtonUp);
+
         // Build
         Build->OnBindEnhancedInputSystem(InputSystem);
     }
@@ -284,14 +319,21 @@ void AVRPlayer::Turn(const FInputActionValue& InputValue)
     AddControllerYawInput(Value.X);
 }
 
+void AVRPlayer::VRJump(const struct FInputActionValue& InputValue)
+{
+    Jump();
+}
+
 void AVRPlayer::LeftGrap(const FInputActionValue& InputValue)
 {
     AnimSet(1, InputValue.Get<float>(), true);
+    bLeftGrap = true;
 }
 
 void AVRPlayer::LeftIndexCurl(const FInputActionValue& InputValue)
 {
     AnimSet(2, InputValue.Get<float>(), true);
+    bLeftTrigger = true;
 }
 
 void AVRPlayer::RightGrap(const FInputActionValue& InputValue)
@@ -303,17 +345,24 @@ void AVRPlayer::RightGrap(const FInputActionValue& InputValue)
 void AVRPlayer::RightIndexCurl(const FInputActionValue& InputValue)
 {
     AnimSet(4, InputValue.Get<float>(), false);
-    bRightCurl = true;
+    bRightTrigger = true;
+}
+
+void AVRPlayer::YButtonDown(const struct FInputActionValue& InputValue)
+{
+    
 }
 
 void AVRPlayer::LeftGrapUp(const FInputActionValue& InputValue)
 {
     AnimSet(1, InputValue.Get<float>(), true);
+    bLeftGrap = false;
 }
 
 void AVRPlayer::LeftIndexCurlUp(const FInputActionValue& InputValue)
 {
     AnimSet(2, InputValue.Get<float>(), true);
+    bLeftTrigger= false;
 }
 
 void AVRPlayer::RightGrapUp(const FInputActionValue& InputValue)
@@ -326,8 +375,13 @@ void AVRPlayer::RightGrapUp(const FInputActionValue& InputValue)
 void AVRPlayer::RightIndexCurlUp(const FInputActionValue& InputValue)
 {
     AnimSet(4, InputValue.Get<float>(), false);
-    bRightCurl = false;
+    bRightTrigger = false;
     RightGrapAllCheck();
+}
+
+void AVRPlayer::YButtonUp(const struct FInputActionValue& InputValue)
+{
+    
 }
 
 void AVRPlayer::AnimSet(int Anim, float Value, bool isMirror)
@@ -367,49 +421,47 @@ void AVRPlayer::OnItemMenu(const struct FInputActionValue& InputValue)
 //After SetVisibility -> SetCollisionEnnabled
 void AVRPlayer::ItemInter(const struct FInputActionValue& InputValue)
 {
-    bRightAbutton = true;
+    bRightBbutton = true;
 }
 
 void AVRPlayer::ItemInterUp(const struct FInputActionValue& InputValue)
 {
-    bRightAbutton = false;
+    bRightBbutton = false;
     RightGrapAllCheck();
 }
 
 void AVRPlayer::ItemIndexPlus(const FInputActionValue& InputValue)
 {
-    ItemVisibleAllFalse();
+	if (!bMeshOn)
+	{
+		ItemVisibleAllFalse();
 
-    if (ItemIndex == ItemArray.Num() - 1)
-    {
-        ItemIndex = 0;
-    }
-    else
-    {
-        ItemIndex++;
-    }
+		if (ItemIndex == ItemArray.Num() - 1)
+		{
+			ItemIndex = 0;
+		}
+		else
+		{
+			ItemIndex++;
+		}
+	}
 }
 
 void AVRPlayer::ItemIndexMinus(const FInputActionValue& InputValue)
 {
-    ItemVisibleAllFalse();
+	if (!bMeshOn)
+	{
+		ItemVisibleAllFalse();
 
-    if (ItemIndex == 0)
-    {
-        ItemIndex = ItemArray.Num() - 1;
-    }
-    else
-    {
-        ItemIndex--;
-    }
-}
-
-void AVRPlayer::SetItem(int ItemNum)
-{
-    if (ItemNum == 0)
-    {
-        ItemVisibleAllFalse();
-    }
+		if (ItemIndex == 0)
+		{
+			ItemIndex = ItemArray.Num() - 1;
+		}
+		else
+		{
+			ItemIndex--;
+		}
+	}
 }
 
 void AVRPlayer::ItemCollisionOnOff(int ItemNum)
@@ -417,15 +469,95 @@ void AVRPlayer::ItemCollisionOnOff(int ItemNum)
     if (ItemNum == 0)
         return;
 
-    else if (ItemArray[ItemNum]->IsVisible())
+//     switch (PlayerState)
+//     {
+//     case EItemState::SetBow:
+//         Bow->SetVisibility(true);
+//         break;
+//     case EItemState::SetSpear:
+//         Spear->SetVisibility(true);
+//         SpearColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+//         break;
+//     case EItemState::SetAxe:
+//         Axe->SetVisibility(true);
+//         AxeColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+//         break;
+//     case EItemState::SetPick:
+//         PickItem->SetVisibility(true);
+//         /*PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);*/
+//         break;
+//     default:
+//         break;
+//     }
+
+    switch (ItemNum)
     {
-        ItemArray[ItemNum]->SetVisibility(false);
-        
+    case 1:
+        Bow->SetVisibility(true);
+        break;
+    case 2:
+        Spear->SetVisibility(true);
+        SpearColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        break;
+    case 3:
+        Axe->SetVisibility(true);
+        AxeColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        break;
+    case 4:
+        PickItem->SetVisibility(true);
+        /*PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);*/
+        break;
+    default:
+        break;
     }
 
-    else
+
+//     else if (ItemArray[ItemNum]->IsVisible())
+//     {
+//         ItemArray[ItemNum]->SetVisibility(false);
+//         
+//     }
+// 
+//     else
+//     {
+//         ItemArray[ItemNum]->SetVisibility(true);
+//     }
+}
+
+void AVRPlayer::SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    auto actor = Cast<AActor>(OtherActor);
+
+    if(actor)
     {
-        ItemArray[ItemNum]->SetVisibility(true);
+        GEngine->AddOnScreenDebugMessage(20, 3.0f, FColor::Red, TEXT("Spear Collision"));
+    }
+}
+
+void AVRPlayer::AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    auto actor = Cast<AActor>(OtherActor);
+
+    if (actor)
+    {
+        GEngine->AddOnScreenDebugMessage(20, 3.0f, FColor::Red, TEXT("Axe Collision"));
+    }
+}
+
+void AVRPlayer::AimArrow()
+{
+    for (int32 i = 0; i < ArrowPool.Num(); i++)
+    {
+        if (!ArrowPool[i]->ArrowMesh->GetVisibleFlag())
+        {
+            bFindArrow = true;
+
+            /*ArrowPool[i]->SetActive(true);*/
+
+            ArrowPool[i]->AttachToComponent(LeftHandMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("index_03_lSocket"));
+
+            break;
+        }
     }
 }
 
@@ -439,31 +571,36 @@ void AVRPlayer::RightGrapAllCheck()
 
 void AVRPlayer::TestItemPush()
 {
-    int num = FMath::RandRange(1, 3);
+    ItemArray.Add(Bow);
+    ItemArray.Add(Spear);
+    ItemArray.Add(Axe);
+    ItemArray.Add(PickItem);
 
-    switch (num)
-    {
-    case 1:
-        ItemArray.Add(Spear);
-        ItemArray.Add(Axe);
-        ItemArray.Add(Bow);
-        ItemArray.Add(PickItem);
-        break;
-    case 2:
-        ItemArray.Add(Bow);
-        ItemArray.Add(PickItem);
-        ItemArray.Add(Axe);
-        ItemArray.Add(Spear);
-        break;
-    case 3:
-        ItemArray.Add(PickItem);
-        ItemArray.Add(Spear);
-        ItemArray.Add(Axe);
-        ItemArray.Add(Bow);
-        break;
-    default:
-        break;
-    }
+//     int num = FMath::RandRange(1, 3);
+// 
+//     switch (num)
+//     {
+//     case 1:
+//         ItemArray.Add(Spear);
+//         ItemArray.Add(Axe);
+//         ItemArray.Add(Bow);
+//         ItemArray.Add(PickItem);
+//         break;
+//     case 2:
+//         ItemArray.Add(Bow);
+//         ItemArray.Add(PickItem);
+//         ItemArray.Add(Axe);
+//         ItemArray.Add(Spear);
+//         break;
+//     case 3:
+//         ItemArray.Add(PickItem);
+//         ItemArray.Add(Spear);
+//         ItemArray.Add(Axe);
+//         ItemArray.Add(Bow);
+//         break;
+//     default:
+//         break;
+//     }
 }
 
 void AVRPlayer::ItemVisibleAllFalse()
@@ -472,4 +609,7 @@ void AVRPlayer::ItemVisibleAllFalse()
     PickItem->SetVisibility(false);
     Axe->SetVisibility(false);
     Bow->SetVisibility(false);
+
+    SpearColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    AxeColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }

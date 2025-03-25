@@ -46,23 +46,34 @@ private: //Camera
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* VRCam;
 
+private: //
+	float MaxHealth = 100;
+	float CurHealth;
+	int ATK;
+
+	EItemState PlayerState = EItemState::NoItem;
 
 private:
 	//moving
 	void Move(const struct FInputActionValue& InputValue);
 	void Turn(const struct FInputActionValue& InputValue);
+
+	//Jump
+	void VRJump(const struct FInputActionValue& InputValue);
 	
 	//Down(Press)Button
 	void LeftGrap(const struct FInputActionValue& InputValue);
 	void LeftIndexCurl(const struct FInputActionValue& InputValue);
 	void RightGrap(const struct FInputActionValue& InputValue);
 	void RightIndexCurl(const struct FInputActionValue& InputValue);
+	void YButtonDown(const struct FInputActionValue& InputValue);
 
 	//Up Button
 	void LeftGrapUp(const struct FInputActionValue& InputValue);
 	void LeftIndexCurlUp(const struct FInputActionValue& InputValue);
 	void RightGrapUp(const struct FInputActionValue& InputValue);
 	void RightIndexCurlUp(const struct FInputActionValue& InputValue);
+	void YButtonUp(const struct FInputActionValue& InputValue);
 
 	//Animation
 	void AnimSet(int Anim, float Value, bool isMirror);
@@ -74,8 +85,14 @@ private:
 	void ItemIndexPlus(const struct FInputActionValue& InputValue);
 	void ItemIndexMinus(const struct FInputActionValue& InputValue);
 
-	void SetItem(int ItemNum);
 	void ItemCollisionOnOff(int ItemNum);
+
+	//Item Collision Overlap
+	UFUNCTION()
+	void SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private: //Hands
 	UPROPERTY(EditDefaultsOnly)
@@ -117,10 +134,25 @@ private: //Item equipment
 	/*UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* BowColli;*/
 
-	bool bRightCurl = false;
+	UPROPERTY(EditAnywhere, Category = Arrow)
+	TSubclassOf<class ACArrow> Arrow;
+
+	ACArrow* SpawnArrow;
+
+	int32 MaxArrowCnt = 5;
+	TArray<class ACArrow*> ArrowPool;
+
+	bool bFindArrow = false;
+
+	void AimArrow();
+
+	bool bRightTrigger = false;
 	bool bRightGrap = false;
-	bool bRightAbutton = false;
+	bool bRightBbutton = false;
 	bool bMeshOn = false;
+
+	bool bLeftGrap = false;
+	bool bLeftTrigger = false;
 
 	void RightGrapAllCheck();
 
@@ -158,4 +190,8 @@ private: //Player Input
 	class UInputAction* IA_ItemIndexPlus;
 	UPROPERTY(EditDefaultsOnly,Category = Input)
 	class UInputAction* IA_ItemIndexMinus;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction* IA_Jump;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction* IA_YButton;
 };
