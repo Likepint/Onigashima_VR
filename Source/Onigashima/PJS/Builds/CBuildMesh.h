@@ -5,17 +5,6 @@
 #include "PJS/Builds/IBuild.h"
 #include "CBuildMesh.generated.h"
 
-USTRUCT()
-struct FAxisVal
-{
-	GENERATED_BODY()
-
-public:
-	int x = 0;
-	int y = 0;
-
-};
-
 UCLASS()
 class ONIGASHIMA_API ACBuildMesh
 	: public AActor
@@ -23,24 +12,12 @@ class ONIGASHIMA_API ACBuildMesh
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* StaticMesh;
 
-	//UPROPERTY(VisibleAnywhere)
-	//class UBoxComponent* Box1;
-
-	//UPROPERTY(VisibleAnywhere)
-	//class UBoxComponent* Box2;
-
-	//UPROPERTY(VisibleAnywhere)
-	//class UBoxComponent* Box3;
-
-	//UPROPERTY(VisibleAnywhere)
-	//class UBoxComponent* Box4;
-
 	UPROPERTY(EditAnywhere)
-	TArray<class UBoxComponent*> BoxComponents;
+	TArray<class UBoxComponent*> SnapCollision;
 	
 public:
 	ACBuildMesh();
@@ -54,11 +31,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+	virtual void OnDamageProcess(int32 InDamage) override;
+
+public:
 	TArray<class UBoxComponent*> ReturnBoxes() override;
 
+protected:
+	TArray<FVector> Coords;
+	TArray<FRotator> Rotations;
+	TArray<FVector> Extents;
+
 private:
-	// 스태틱 메시 기준으로 위에서 아래를 보는 기준
-	// 오른쪽, 아래쪽, 왼쪽, 위쪽
-	TArray<FAxisVal> Axis = { {2, 0}, {0, 2}, {-2, 0}, {0, -2} };
+	UPROPERTY(VisibleAnywhere, Category = "Health")
+	int32 Health = 100;
 
 };
