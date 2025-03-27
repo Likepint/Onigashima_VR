@@ -46,42 +46,74 @@ private: //Camera
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* VRCam;
 
+private:
+	int32 Health = 20;
+	int32 ATK;
+
+	EItemState PlayerState = EItemState::NoItem;
+
+public:
+	void OnDamagePlayer(int32 damage);
 
 private:
 	//moving
 	void Move(const struct FInputActionValue& InputValue);
 	void Turn(const struct FInputActionValue& InputValue);
+
+	//Jump
+	void VRJump(const struct FInputActionValue& InputValue);
 	
 	//Down(Press)Button
 	void LeftGrap(const struct FInputActionValue& InputValue);
 	void LeftIndexCurl(const struct FInputActionValue& InputValue);
 	void RightGrap(const struct FInputActionValue& InputValue);
 	void RightIndexCurl(const struct FInputActionValue& InputValue);
+	void YButtonDown(const struct FInputActionValue& InputValue);
 
 	//Up Button
 	void LeftGrapUp(const struct FInputActionValue& InputValue);
 	void LeftIndexCurlUp(const struct FInputActionValue& InputValue);
 	void RightGrapUp(const struct FInputActionValue& InputValue);
 	void RightIndexCurlUp(const struct FInputActionValue& InputValue);
+	void YButtonUp(const struct FInputActionValue& InputValue);
 
 	//Animation
 	void AnimSet(int Anim, float Value, bool isMirror);
 
 	//Item
-	void OnItemMenu(const struct FInputActionValue& InputValue);
+	/*void OnItemMenu(const struct FInputActionValue& InputValue);*/
 	void ItemInter(const struct FInputActionValue& InputValue);
 	void ItemInterUp(const struct FInputActionValue& InputValue);
 	void ItemIndexPlus(const struct FInputActionValue& InputValue);
 	void ItemIndexMinus(const struct FInputActionValue& InputValue);
 
-	void SetItem(int ItemNum);
 	void ItemCollisionOnOff(int ItemNum);
+
+	//Item Collision Overlap
+	UFUNCTION()
+	void SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	//Left Hand Collision Overlap
+	UFUNCTION()
+	void LeftHandBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void LeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private: //Hands
 	UPROPERTY(EditDefaultsOnly)
 	class UMotionControllerComponent* LeftSceneComp;
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMeshComponent* LeftHandMesh;
+	UPROPERTY(EditDefaultsOnly)
+	class USphereComponent* LeftHandColli;
+
 
 	UPROPERTY(EditDefaultsOnly)
 	class UMotionControllerComponent* RightSceneComp;
@@ -103,9 +135,8 @@ private: //Item equipment
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* PickItem;
-	/*UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* PickColli;*/
-
+	UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* PickColli;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Axe;
@@ -114,20 +145,36 @@ private: //Item equipment
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Bow;
-	/*UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* BowColli;*/
+	UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* BowColli;
 
-	bool bRightCurl = false;
+	UPROPERTY(EditAnywhere, Category = Arrow)
+	TSubclassOf<class ACArrow> Arrow;
+
+	ACArrow* SpawnArrow;
+
+	int32 MaxArrowCnt = 5;
+	TArray<class ACArrow*> ArrowPool;
+
+	int32 ArrowIndex = 0;
+
+	bool bFindArrow = false;
+
+	void AimArrow();
+
+	bool bDetectBowString = false;
+
+	bool bRightTrigger = false;
 	bool bRightGrap = false;
-	bool bRightAbutton = false;
+	bool bRightBbutton = false;
 	bool bMeshOn = false;
+
+	bool bLeftGrap = false;
+	bool bLeftTrigger = false;
 
 	void RightGrapAllCheck();
 
 	TArray<UStaticMeshComponent*> ItemArray;
-
-	//현재 테스트 중
-	TArray<class ACItem*> GetItems;
 
 	int ItemIndex = 0;
 
@@ -158,4 +205,8 @@ private: //Player Input
 	class UInputAction* IA_ItemIndexPlus;
 	UPROPERTY(EditDefaultsOnly,Category = Input)
 	class UInputAction* IA_ItemIndexMinus;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction* IA_Jump;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	class UInputAction* IA_YButton;
 };

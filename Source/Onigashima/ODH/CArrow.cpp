@@ -1,9 +1,12 @@
-
+﻿
 
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ODH/CArrow.h"
+#include "Components/BoxComponent.h"
+#include "Global.h"
+#include "../KJY/CEnemy.h"
 
 // Sets default values
 ACArrow::ACArrow()
@@ -11,6 +14,19 @@ ACArrow::ACArrow()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	Collision = CreateDefaultSubobject<UBoxComponent>(L"Collision");
+	SetRootComponent(Collision);
+	Collision->SetBoxExtent(FVector(38.451927f, 0.832166f, 1.710501f));
+
+	ArrowMesh = CreateDefaultSubobject<UStaticMeshComponent>(L"ArrowMesh");
+	ArrowMesh->SetupAttachment(Collision);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> TempMesh(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Arrow/cc0_wooden_arrow.cc0_wooden_arrow'");
+	if (TempMesh.Succeeded())
+	{
+		ArrowMesh->SetStaticMesh(TempMesh.Object);
+		ArrowMesh->SetRelativeRotation(FRotator(45, -30, 0));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -18,6 +34,7 @@ void ACArrow::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Velocity = GetActorForwardVector() * 2000;
 }
 
 // Called every frame
@@ -25,5 +42,49 @@ void ACArrow::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	
+
+	if (bShooting)
+	{
+		Velocity.Z += Gravity * DeltaTime;
+
+		SetActorLocation(GetActorLocation() + Velocity * DeltaTime);
+	}
+}
+
+void ACArrow::SetMesh(bool bValue)
+{
+	ArrowMesh->SetVisibility(bValue);
+}
+
+void ACArrow::SetCollision(bool bValue)
+{
+	if (bValue)
+	{
+		Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	else
+	{
+		Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void ACArrow::SetBool(bool bValue)
+{
+	bShooting = bValue;
+}
+
+void ACArrow::ArrowOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	bShooting = false;
+
+	ACEnemy* enemy = Cast<ACEnemy>(OtherActor);
+	if (enemy)
+	{
+		//enemy->OnDamageEnemy(DamageAmount)
+	}
+	
+	SetMesh(false);
+	SetCollision(false);
 }
 
