@@ -9,6 +9,7 @@
 UENUM()
 enum class EEnemyState : uint8
 {
+	Start		UMETA(DisplayName = "Start"),
 	Idle		UMETA (DisplayName = "Idle"),
 	Move		UMETA (DisplayName = "Move"),
 	Attack		UMETA (DisplayName = "Attack"),
@@ -72,7 +73,7 @@ private:	// 세팅 관련
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
-	EEnemyState mState = EEnemyState::Idle;
+	EEnemyState mState = EEnemyState::Start;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
 	EAttackState mAttState = EAttackState::ReturnBase;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
@@ -83,15 +84,21 @@ private: // 시간 관련 변수
 	float idleDelayTime = 0.1f;
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
 	float attackDelayTime = 2.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = FSM)
+	float fireSpawn = 0.05f;
+
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
 	float currentTime = 0.f;
 
 
 private: // Range 변수
 	UPROPERTY(EditAnywhere, Category = FSM)
-	float attackRange = 100.f;
+	float attackRange = 900.f;
+	UPROPERTY(EditAnywhere, Category = FSM)
+	float breathRange = 900.f;
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
-	float searchRange = 2000.f;
+	float searchRange = 3000.f;
 
 
 private:
@@ -100,6 +107,7 @@ private:
 	// 이 값을 채우면 착륙함
 	const int MaxLandCount = 3;
 	// 이 값을 채우면 비행함
+
 	const int MaxFlyCount = 3;
 	// 랜덤공격 갯수.
 	const int TotalAttKinds = 2;
@@ -117,6 +125,7 @@ public:	//Count 변수. 비행시에도 사용
 
 
 private:// State 함수
+	void StartState();
 	void IdleState();
 	void MoveState();
 	void FlyState();
@@ -131,7 +140,6 @@ private:// State 함수
 	void FMoveState();
 	void FlyBreathState();		//브레스 공격
 	void FlyAttack_1State();	//고민중...
-	void EndFlyState();
 
 	// Dead 함수
 	void DeadState();
@@ -141,9 +149,9 @@ public:
 	void OnAttackProcess();
 	void EndAttackProcess();
 	FVector SearchEnemy();
-
-
+	void EndFlyState();
 
 public:	//notify 관련
 	void StartHighFly_END();
+	void End_Opening();
 };

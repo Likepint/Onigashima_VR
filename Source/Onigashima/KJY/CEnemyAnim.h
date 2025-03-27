@@ -20,20 +20,22 @@ class ONIGASHIMA_API UCEnemyAnim : public UAnimInstance
 public:
 //기본적으로 eAnimState 사용, Fly나 Attack일때만 아래 두 개 붙여줌
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = FSM)
-	EEnemyState eAnimState	 = EEnemyState::Idle;
+	EEnemyState eAnimState	 = EEnemyState::Start;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = FSM)
 	EAttackState eAttackState = EAttackState::ReturnBase;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = FSM)
 	EFlyState eFlyState = EFlyState::ReturnBase;
-
+	                     
 
 public: // bool체크 변수 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnim_bool)
-	bool IsFly = false;
+	bool bIsFly = false;
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnim_bool)
 	//bool IsAttack = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnim_bool)
-	bool IsDead = false;
+	bool bIsDead = false;
+
+	bool bIsBreath = false;
 
 
 public:	//수치값
@@ -49,4 +51,20 @@ public:	// AnimNotify 관련
 	void AnimNotify_ATT1_END();
 	UFUNCTION()
 	void AnimNotify_Breath_END();
+	UFUNCTION()
+	void AnimNotify_FBreath_END();
+	UFUNCTION()
+	void AnimNotify_FAttack_END();
+
+	UFUNCTION()
+	void AnimNotify_AttackStart();
+
+	UFUNCTION()
+	void AnimNotify_AttackEnd();
+
+	UFUNCTION()
+	void AnimNotify_Breath_Start();
+
+	UFUNCTION()
+	void AnimNotify_End_Opening();
 };

@@ -13,7 +13,6 @@ void UCEnemyAnim::NativeUpdateAnimation(float DeltaSeconds)
 	if(!enemy) { return; }
 
 
-	// speed, direction 계산하는 파트 (기억이 가물가물함... 복습하기)
 	FVector velocity = enemy->GetVelocity();
 	FVector forwardVector = enemy->GetActorForwardVector();
 
@@ -43,5 +42,41 @@ void UCEnemyAnim::AnimNotify_ATT1_END()
 void UCEnemyAnim::AnimNotify_Breath_END()
 {
 	enemy->FSM->EndAttackProcess();
+	bIsBreath = false;
+}
+
+void UCEnemyAnim::AnimNotify_FBreath_END()
+{
+	enemy->FSM->EndAttackProcess();
+	bIsBreath = false;
+}
+
+void UCEnemyAnim::AnimNotify_FAttack_END()
+{
+
+	enemy->FSM->EndFlyState();
+}
+
+void UCEnemyAnim::AnimNotify_AttackStart()
+{
+	enemy->AttackStart();
+}
+
+void UCEnemyAnim::AnimNotify_AttackEnd()
+{
+	enemy->AttackEnd();
+}
+
+void UCEnemyAnim::AnimNotify_Breath_Start()
+{
+	bIsBreath = true;
+
+
+}
+
+void UCEnemyAnim::AnimNotify_End_Opening()
+{
+	enemy->FSM->End_Opening();
+
 }
 
