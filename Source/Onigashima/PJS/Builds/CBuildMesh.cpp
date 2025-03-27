@@ -1,30 +1,13 @@
 ﻿#include "PJS/Builds/CBuildMesh.h"
 #include "Global.h"
 #include "Components/BoxComponent.h"
+#include "KJY/CEnemy.h"
 
 ACBuildMesh::ACBuildMesh()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	CHelpers::CreateComponent<UStaticMeshComponent>(this, &StaticMesh, "StaticMesh");
-
-	//CHelpers::CreateComponent<UBoxComponent>(this, &Box1, "Box1", StaticMesh);
-	//CHelpers::CreateComponent<UBoxComponent>(this, &Box2, "Box2", StaticMesh);
-	//CHelpers::CreateComponent<UBoxComponent>(this, &Box3, "Box3", StaticMesh);
-	//CHelpers::CreateComponent<UBoxComponent>(this, &Box4, "Box4", StaticMesh);
-
-	for (int32 i = 0; i < 8; ++i)
-	{
-		FString name = FString::Printf(TEXT("Box%d"), i + 1);
-		// 이름을 Box 1 ~ 4로 설정
-		UBoxComponent* box = CreateDefaultSubobject<UBoxComponent>(*name);
-		// BoxComponent를 위에서 설정한 이름으로 지정하여 생성
-
-		box->SetupAttachment(StaticMesh);
-
-		// BoxComponents 배열에 추가
-		BoxComponents.Add(box);
-	}
 
 }
 
@@ -33,28 +16,17 @@ void ACBuildMesh::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	CheckNull(StaticMesh);
+	CheckNull(StaticMesh->GetStaticMesh());
 
 	// 현재의 스태틱메시의 Extent 로드
 	FVector extent = StaticMesh->GetStaticMesh()->GetBounds().BoxExtent;
 
-	//Box1->SetRelativeLocation(FVector(extent.X * 2, 0, extent.Z));
-	//Box1->SetBoxExtent(FVector(extent));
+	CheckTrue(Coords.IsEmpty());
 
-	//Box2->SetRelativeLocation(FVector(0, extent.Y * 2, extent.Z));
-	//Box2->SetBoxExtent(FVector(extent));
-
-	//Box3->SetRelativeLocation(FVector(-extent.X * 2, 0, extent.Z));
-	//Box3->SetBoxExtent(FVector(extent));
-
-	//Box4->SetRelativeLocation(FVector(0, -extent.Y * 2, extent.Z));
-	//Box4->SetBoxExtent(FVector(extent));
-
-	for (int i = 0; i < Axis.Num(); ++i)
+	for (int i = 0; i < Coords.Num(); ++i)
 	{
 		// Extent만큼 상대 위치 이동
-		BoxComponents[i]->SetRelativeLocation(FVector(extent.X * Axis[i].x, extent.Y * Axis[i].y, extent.Z));
-		// 박스 크기를 스태틱메시의 Extent와 동일하게 설정
-		BoxComponents[i]->SetBoxExtent(extent);
+		SnapCollision[i]->SetRelativeLocation(FVector(extent.X * Coords[i].X, extent.Y * Coords[i].Y, Coords[i].Z == 0 ? extent.Z : Coords[i].Z));
 
 	}
 
@@ -72,8 +44,21 @@ void ACBuildMesh::Tick(float DeltaTime)
 
 }
 
+void ACBuildMesh::OnDamageProcess(int32 InDamage)
+{
+	Health -= InDamage;
+
+	if (Health <= 0)
+	{
+		Destroy();
+
+		return;
+	}
+
+}
+
 TArray<class UBoxComponent*> ACBuildMesh::ReturnBoxes()
 {
-	return BoxComponents;
+	return SnapCollision;
 
 }

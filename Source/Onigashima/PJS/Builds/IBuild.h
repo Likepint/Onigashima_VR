@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
@@ -17,5 +17,7 @@ class ONIGASHIMA_API IIBuild
 
 public:
 	virtual TArray<class UBoxComponent*> ReturnBoxes();
+
+	virtual void OnDamageProcess(int32 InDamage);
 
 };
