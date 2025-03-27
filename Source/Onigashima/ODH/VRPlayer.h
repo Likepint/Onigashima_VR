@@ -46,12 +46,14 @@ private: //Camera
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* VRCam;
 
-private: //
-	float MaxHealth = 100;
-	float CurHealth;
-	int ATK;
+private:
+	int32 Health = 20;
+	int32 ATK;
 
 	EItemState PlayerState = EItemState::NoItem;
+
+public:
+	void OnDamagePlayer(int32 damage);
 
 private:
 	//moving
@@ -79,7 +81,7 @@ private:
 	void AnimSet(int Anim, float Value, bool isMirror);
 
 	//Item
-	void OnItemMenu(const struct FInputActionValue& InputValue);
+	/*void OnItemMenu(const struct FInputActionValue& InputValue);*/
 	void ItemInter(const struct FInputActionValue& InputValue);
 	void ItemInterUp(const struct FInputActionValue& InputValue);
 	void ItemIndexPlus(const struct FInputActionValue& InputValue);
@@ -94,11 +96,24 @@ private:
 	UFUNCTION()
 	void AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	//Left Hand Collision Overlap
+	UFUNCTION()
+	void LeftHandBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void LeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 private: //Hands
 	UPROPERTY(EditDefaultsOnly)
 	class UMotionControllerComponent* LeftSceneComp;
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMeshComponent* LeftHandMesh;
+	UPROPERTY(EditDefaultsOnly)
+	class USphereComponent* LeftHandColli;
+
 
 	UPROPERTY(EditDefaultsOnly)
 	class UMotionControllerComponent* RightSceneComp;
@@ -120,9 +135,8 @@ private: //Item equipment
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* PickItem;
-	/*UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* PickColli;*/
-
+	UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* PickColli;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Axe;
@@ -131,8 +145,8 @@ private: //Item equipment
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Bow;
-	/*UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* BowColli;*/
+	UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* BowColli;
 
 	UPROPERTY(EditAnywhere, Category = Arrow)
 	TSubclassOf<class ACArrow> Arrow;
@@ -142,9 +156,13 @@ private: //Item equipment
 	int32 MaxArrowCnt = 5;
 	TArray<class ACArrow*> ArrowPool;
 
+	int32 ArrowIndex = 0;
+
 	bool bFindArrow = false;
 
 	void AimArrow();
+
+	bool bDetectBowString = false;
 
 	bool bRightTrigger = false;
 	bool bRightGrap = false;
@@ -157,9 +175,6 @@ private: //Item equipment
 	void RightGrapAllCheck();
 
 	TArray<UStaticMeshComponent*> ItemArray;
-
-	//현재 테스트 중
-	TArray<class ACItem*> GetItems;
 
 	int ItemIndex = 0;
 

@@ -17,6 +17,7 @@
 #include "CAxe.h"
 #include "Components/BoxComponent.h"
 #include "CArrow.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -122,6 +123,14 @@ AVRPlayer::AVRPlayer()
     {
         LeftHandMesh->SetSkeletalMesh(Temp_LeftHand.Object);
         LeftHandMesh->SetRelativeRotation(FRotator(0, -90, 0));
+
+        LeftHandColli=CreateDefaultSubobject<USphereComponent>(L"LeftHandCollision");
+        LeftHandColli->SetupAttachment(LeftHandMesh);
+        LeftHandColli->SetSphereRadius(5);
+        LeftHandColli->SetRelativeLocation(FVector(0, 11,-2));
+
+        LeftHandColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::LeftHandBeginOverlap);
+        LeftHandColli->OnComponentEndOverlap.AddDynamic(this, &AVRPlayer::LeftHandEndOverlap);
     }
 
     // Right Hand Create
@@ -138,11 +147,10 @@ AVRPlayer::AVRPlayer()
         RightHandMesh->SetRelativeRotation(FRotator(0, -90, 0));
     }
 
-    //equipment
+    //Items
     Spear = CreateDefaultSubobject<UStaticMeshComponent>(L"SpearComp");
     Spear->SetupAttachment(RightHandMesh, L"hand_rSocket");
-
-    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Spear(L"/Script/Engine.StaticMesh'/Game/ODH/Old_Wooden_Pole_ueqfdi0ga/Old_Wooden_Pole_ueqfdi0ga_Low.Old_Wooden_Pole_ueqfdi0ga_Low'");
+    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Spear(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Spear/Old_Wooden_Pole_ueqfdi0ga_Low.Old_Wooden_Pole_ueqfdi0ga_Low'");
     if (Temp_Spear.Succeeded())
     {
         Spear->SetStaticMesh(Temp_Spear.Object);
@@ -158,11 +166,23 @@ AVRPlayer::AVRPlayer()
 
     PickItem = CreateDefaultSubobject<UStaticMeshComponent>(L"PickComp");
     PickItem->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    PickItem->SetRelativeScale3D(FVector(0.2f));
+    ConstructorHelpers::FObjectFinder<UStaticMesh>Temp_Pick(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Pick/pickaxe.pickaxe'");
+    if (Temp_Pick.Succeeded())
+    {
+        PickItem->SetStaticMesh(Temp_Pick.Object);
+        PickItem->SetRelativeLocationAndRotation(FVector(0,0, 8.965752f),FRotator(0, 0, 85));
+        PickItem->SetRelativeScale3D(FVector(0.1775f));
+
+        PickColli =CreateDefaultSubobject<UBoxComponent>(L"PickCollision");
+        PickColli->SetupAttachment(PickItem);
+        PickColli->SetRelativeLocation(FVector(0, 93.617023, 7));
+        PickColli->SetBoxExtent(FVector(17.624384f, 117.007257f, 25.261781f));
+        PickColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::PickOverlap);
+    }
 
     Axe = CreateDefaultSubobject<UStaticMeshComponent>(L"AxeComp");
     Axe->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Axe(L"/Script/Engine.StaticMesh'/Game/ODH/Axe_ueqgcaifa/Medium/ueqgcaifa_tier_2.ueqgcaifa_tier_2'");
+    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Axe(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Axe/Medium/ueqgcaifa_tier_2.ueqgcaifa_tier_2'");
     if (Temp_Axe.Succeeded())
     {
         Axe->SetStaticMesh(Temp_Axe.Object);
@@ -175,10 +195,20 @@ AVRPlayer::AVRPlayer()
         AxeColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::AxeOverlap);
     }
 
-
     Bow = CreateDefaultSubobject<UStaticMeshComponent>(L"BowComp");
     Bow->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    Bow->SetRelativeScale3D(FVector(0.2f));
+    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Bow(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Bow/cool_bow.cool_bow'");
+    if (Temp_Bow.Succeeded())
+    {
+        Bow->SetStaticMesh(Temp_Bow.Object);
+        Bow->SetRelativeLocationAndRotation(FVector(0, -0.784402f, 8.965752f),FRotator(0,0,85));
+        Bow->SetRelativeScale3D(FVector(0.1775f));
+
+        BowColli=CreateDefaultSubobject<UBoxComponent>(L"BowStringCollision");
+        BowColli->SetupAttachment(Bow);
+        BowColli->SetRelativeLocation(FVector(0, -33.802818f, 2));
+        BowColli->SetBoxExtent(FVector(60.520447f, 4.949969f, 5.551495f));
+    }
 }
 
 // Called when the game starts or when spawned
@@ -205,17 +235,17 @@ void AVRPlayer::BeginPlay()
     LeftHandAnim = Cast<UCVRPlayerAnim>(LeftHandMesh->GetAnimInstance());
     RightHandAnim = Cast<UCVRPlayerAnim>(RightHandMesh->GetAnimInstance());
 
-    CurHealth = MaxHealth;
-
     TestItemPush();
 
+    //화살을 오브젝트 풀을 사용하여 미리 스폰을 해줌
     for (int32 i = 0; i < MaxArrowCnt; i++)
     {
         FActorSpawnParameters params;
         params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
         ACArrow* Ar = GetWorld()->SpawnActor<ACArrow>(Arrow,params);
-        Ar->SetActive(false);
+        Ar->SetMesh(false);
+        Ar->SetCollision(false);
         ArrowPool.Add(Ar);
     }
 }
@@ -225,15 +255,37 @@ void AVRPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    if (bRightBbutton && bRightTrigger && bRightGrap && !bMeshOn)
+    if (bRightBbutton && bRightGrap && !bMeshOn)
     {
         ItemCollisionOnOff(ItemIndex);
         bMeshOn = true;
     }
 
-    if (Bow->IsVisible() && !bFindArrow && bLeftTrigger && bLeftGrap)
+    if (bDetectBowString)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("bDetectBowString Is True"));
+    }
+
+    if (Bow->IsVisible() && bDetectBowString && !bFindArrow && bLeftTrigger && bLeftGrap)
     {
         AimArrow();
+    }
+
+    if (bFindArrow)
+    {
+        //화살의 앞이 오른쪽 컨트롤러의 위치를 바라보게 만들면 저절로 나아가는 방향이 결정 되게 됨
+        FVector Target = Bow->GetComponentLocation() - ArrowPool[ArrowIndex]->GetActorLocation();
+        ArrowPool[ArrowIndex]->ArrowMesh->SetWorldRotation(Target.Rotation());
+    }
+
+    //여기 부분에는 이제 화살이 날아가도록 만드는 코드로 변경해줘야 함
+    if (bFindArrow && !bLeftTrigger || bFindArrow && !bLeftGrap)
+    {
+        bFindArrow = false;
+        /*ArrowPool[ArrowIndex]->SetBool(true);*/
+//         ArrowPool[ArrowIndex]->SetCollision(false);
+//         ArrowPool[ArrowIndex]->SetMesh(false);
+        ArrowPool[ArrowIndex]->SetBool(true);
     }
     
 //     if (Bow->IsVisible() && !SpawnArrow && bLeftTrigger && bLeftGrap)
@@ -289,8 +341,8 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         InputSystem->BindAction(IA_RightIdexCurl, ETriggerEvent::Completed, this, &AVRPlayer::RightIndexCurlUp);
 
         //Item
-        InputSystem->BindAction(IA_ItemMenu, ETriggerEvent::Started, this,
-            &AVRPlayer::OnItemMenu);
+//         InputSystem->BindAction(IA_ItemMenu, ETriggerEvent::Started, this,
+//             &AVRPlayer::OnItemMenu);
         InputSystem->BindAction(IA_ItemInteraction, ETriggerEvent::Started, this, &AVRPlayer::ItemInter);
         InputSystem->BindAction(IA_ItemInteraction, ETriggerEvent::Completed, this, &AVRPlayer::ItemInterUp);
         InputSystem->BindAction(IA_ItemIndexPlus, ETriggerEvent::Completed, this, &AVRPlayer::ItemIndexPlus);
@@ -304,6 +356,13 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     }
 }
 
+//플레이어 체력 감소 이벤트
+void AVRPlayer::OnDamagePlayer(int32 damage)
+{
+    Health -= damage;
+}
+
+//플레이어 이동
 void AVRPlayer::Move(const FInputActionValue& InputValue)
 {
     FVector2d Value = InputValue.Get<FVector2d>();
@@ -312,6 +371,7 @@ void AVRPlayer::Move(const FInputActionValue& InputValue)
     AddMovementInput(Dir);
 }
 
+//마우스 한정 회전
 void AVRPlayer::Turn(const FInputActionValue& InputValue)
 {
     FVector2d Value = InputValue.Get<FVector2d>();
@@ -369,14 +429,14 @@ void AVRPlayer::RightGrapUp(const FInputActionValue& InputValue)
 {
     AnimSet(3, InputValue.Get<float>(), false);
     bRightGrap = false;
-    RightGrapAllCheck();
+    RightGrapAllCheck(); //현재 들고 있는 도구를 비활성화 시켜줌
 }
 
 void AVRPlayer::RightIndexCurlUp(const FInputActionValue& InputValue)
 {
     AnimSet(4, InputValue.Get<float>(), false);
     bRightTrigger = false;
-    RightGrapAllCheck();
+    RightGrapAllCheck(); //현재 들고 있는 도구를 비활성화 시켜줌
 }
 
 void AVRPlayer::YButtonUp(const struct FInputActionValue& InputValue)
@@ -386,6 +446,7 @@ void AVRPlayer::YButtonUp(const struct FInputActionValue& InputValue)
 
 void AVRPlayer::AnimSet(int Anim, float Value, bool isMirror)
 {
+    //각 버튼에 따라 손 애니메이션이 나옴
     switch (Anim)
     {
     case 1:
@@ -409,14 +470,14 @@ void AVRPlayer::AnimSet(int Anim, float Value, bool isMirror)
     }
 }
 
-void AVRPlayer::OnItemMenu(const struct FInputActionValue& InputValue)
-{
-    //탭 또는 오른쪽 스틱 버튼이 눌린다면
-    //아이템 UI 창이 열리지 않은 상태이면
-    //if()
-
-    //아이템 UI창을 띄워줌
-}
+// void AVRPlayer::OnItemMenu(const struct FInputActionValue& InputValue)
+// {
+//     //탭 또는 오른쪽 스틱 버튼이 눌린다면
+//     //아이템 UI 창이 열리지 않은 상태이면
+//     //if()
+// 
+//     //아이템 UI창을 띄워줌
+// }
 
 //After SetVisibility -> SetCollisionEnnabled
 void AVRPlayer::ItemInter(const struct FInputActionValue& InputValue)
@@ -427,15 +488,17 @@ void AVRPlayer::ItemInter(const struct FInputActionValue& InputValue)
 void AVRPlayer::ItemInterUp(const struct FInputActionValue& InputValue)
 {
     bRightBbutton = false;
-    RightGrapAllCheck();
+    RightGrapAllCheck(); //현재 들고 있는 도구를 비활성화 시켜줌
 }
 
 void AVRPlayer::ItemIndexPlus(const FInputActionValue& InputValue)
 {
+    //현재 손에 아이템이 안 보이는 상태여야 함
 	if (!bMeshOn)
 	{
 		ItemVisibleAllFalse();
 
+        //아이템 인덱스가 마지막 자리일 경우, 가장 처음 자리로 옮김
 		if (ItemIndex == ItemArray.Num() - 1)
 		{
 			ItemIndex = 0;
@@ -449,10 +512,12 @@ void AVRPlayer::ItemIndexPlus(const FInputActionValue& InputValue)
 
 void AVRPlayer::ItemIndexMinus(const FInputActionValue& InputValue)
 {
+    //현재 손에 아이템이 안 보이는 상태여야 함
 	if (!bMeshOn)
 	{
 		ItemVisibleAllFalse();
 
+        //아이템 인덱스가 0일 경우, 처음일 경우 가장 마지막 자리로 옮김
 		if (ItemIndex == 0)
 		{
 			ItemIndex = ItemArray.Num() - 1;
@@ -466,34 +531,16 @@ void AVRPlayer::ItemIndexMinus(const FInputActionValue& InputValue)
 
 void AVRPlayer::ItemCollisionOnOff(int ItemNum)
 {
+    //맨손 상태일 때는 아래 코드를 실행하지 않음
     if (ItemNum == 0)
         return;
 
-//     switch (PlayerState)
-//     {
-//     case EItemState::SetBow:
-//         Bow->SetVisibility(true);
-//         break;
-//     case EItemState::SetSpear:
-//         Spear->SetVisibility(true);
-//         SpearColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-//         break;
-//     case EItemState::SetAxe:
-//         Axe->SetVisibility(true);
-//         AxeColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-//         break;
-//     case EItemState::SetPick:
-//         PickItem->SetVisibility(true);
-//         /*PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);*/
-//         break;
-//     default:
-//         break;
-//     }
-
+    //각 아이템에 따라 모습 활성화와 콜리전을 활성화시켜줌
     switch (ItemNum)
     {
     case 1:
         Bow->SetVisibility(true);
+        BowColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         break;
     case 2:
         Spear->SetVisibility(true);
@@ -505,23 +552,11 @@ void AVRPlayer::ItemCollisionOnOff(int ItemNum)
         break;
     case 4:
         PickItem->SetVisibility(true);
-        /*PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);*/
+        PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         break;
     default:
         break;
     }
-
-
-//     else if (ItemArray[ItemNum]->IsVisible())
-//     {
-//         ItemArray[ItemNum]->SetVisibility(false);
-//         
-//     }
-// 
-//     else
-//     {
-//         ItemArray[ItemNum]->SetVisibility(true);
-//     }
 }
 
 void AVRPlayer::SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -544,23 +579,50 @@ void AVRPlayer::AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
     }
 }
 
+void AVRPlayer::PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+}
+
+void AVRPlayer::LeftHandBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    bDetectBowString = true;
+}
+
+void AVRPlayer::LeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    bDetectBowString = false;
+}
+
+//화살을 생성하게 만들어주고, 화살 촉이 언제나 앞을 향하도록 함
 void AVRPlayer::AimArrow()
 {
-    for (int32 i = 0; i < ArrowPool.Num(); i++)
+    for (ArrowIndex = 0; ArrowIndex < ArrowPool.Num(); ArrowIndex++)
     {
-        if (!ArrowPool[i]->ArrowMesh->GetVisibleFlag())
+        if (!ArrowPool[ArrowIndex]->ArrowMesh->GetVisibleFlag())
         {
+            //오브젝트 풀에서 화살을 찾았다고 표시함
             bFindArrow = true;
 
-            /*ArrowPool[i]->SetActive(true);*/
+            //오브젝트 풀의 해당 화살의 모습을 보이게 만듦
+            ArrowPool[ArrowIndex]->SetMesh(true);
 
-            ArrowPool[i]->AttachToComponent(LeftHandMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("index_03_lSocket"));
+            //화살을 왼손에 붙임
+            ArrowPool[ArrowIndex]->AttachToComponent(LeftHandMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("index_03_lSocket"));
+
+
+            //위쪽에 bool을 사용해서 한번만 불러오게 만들었기에 회전이 일어나지 않음
+            //화살의 앞이 오른쪽 컨트롤러의 위치를 바라보게 만들면 저절로 나아가는 방향이 결정 되게 됨
+            //처음에 오른손 컨트롤러(Right Hand)의 위치를 사용하니 화살이 이상하게 바라봐서 Bow를 바라보게 바꿔봤음
+//             FVector Target = Bow->GetComponentLocation() - GetActorLocation();
+//             ArrowPool[ArrowIndex]->ArrowMesh->SetWorldRotation(Target.Rotation());
 
             break;
         }
     }
 }
 
+//오른쪽 아이템 버튼 중 하나라도 뗐을 때 아이템이 안보이게 만듦
 void AVRPlayer::RightGrapAllCheck()
 {
     if(ItemIndex != 0)
@@ -569,40 +631,16 @@ void AVRPlayer::RightGrapAllCheck()
     bMeshOn = false;
 }
 
+//아이템을 먼저 배열에 넣음.
 void AVRPlayer::TestItemPush()
 {
     ItemArray.Add(Bow);
     ItemArray.Add(Spear);
     ItemArray.Add(Axe);
     ItemArray.Add(PickItem);
-
-//     int num = FMath::RandRange(1, 3);
-// 
-//     switch (num)
-//     {
-//     case 1:
-//         ItemArray.Add(Spear);
-//         ItemArray.Add(Axe);
-//         ItemArray.Add(Bow);
-//         ItemArray.Add(PickItem);
-//         break;
-//     case 2:
-//         ItemArray.Add(Bow);
-//         ItemArray.Add(PickItem);
-//         ItemArray.Add(Axe);
-//         ItemArray.Add(Spear);
-//         break;
-//     case 3:
-//         ItemArray.Add(PickItem);
-//         ItemArray.Add(Spear);
-//         ItemArray.Add(Axe);
-//         ItemArray.Add(Bow);
-//         break;
-//     default:
-//         break;
-//     }
 }
 
+//아이템 비활성화 및 콜리전 충돌 처리 없애는 작업
 void AVRPlayer::ItemVisibleAllFalse()
 {
     Spear->SetVisibility(false);
@@ -612,4 +650,6 @@ void AVRPlayer::ItemVisibleAllFalse()
 
     SpearColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     AxeColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    BowColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    PickColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
