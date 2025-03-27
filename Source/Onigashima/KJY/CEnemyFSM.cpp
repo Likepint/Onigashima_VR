@@ -6,6 +6,7 @@
 //			ㄴ일단 ISFly로 비행상태 체크하기로
 // 03.23 - 비행 공격마다 높이가 다르다... High / Low로 분리하거나 루트본 끌어치기 배워야 될 것 같음...
 
+
 #include "KJY/CEnemyFSM.h"
 #include "CEnemy.h"
 #include "Kismet/GameplayStatics.h"
@@ -32,7 +33,6 @@ void UCEnemyFSM::BeginPlay()
 	
 	if (!actor) { return; }
 	target = Cast<ACKJYDummy>(actor);
-
 	enemy = Cast< ACEnemy>(GetOwner());
 	
 	if (!enemy) { return; }
@@ -42,6 +42,8 @@ void UCEnemyFSM::BeginPlay()
 	// 혹시 모를 초기화
 	randomAttack = FMath::RandRange(1, TotalAttKinds);
 	attCount = 0;
+
+
 }
 
 
@@ -68,6 +70,7 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	//스테이트 변경
 	switch (mState)
 	{
+	case EEnemyState::Start		 : { StartState();		}	break;
 	case EEnemyState::Idle		 : { IdleState();		}	break;
 	case EEnemyState::Move		 : { MoveState();		}	break;
 	case EEnemyState::Attack	 : {  }	break;
@@ -88,15 +91,21 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	switch (mFlyState)
 	{
 	case EFlyState::ReturnBase		: {  }	break;
-	//case EFlyState::StartFly		: { /*StartFlyState();*/ }	break;
+	case EFlyState::StartFly		: { StartFlyState();	 }	break;
 	case EFlyState::FlyIdle			: { FlyIdleState();		 }	break;
 	case EFlyState::FMove			: { FMoveState();		 }	break;
 
-	case EFlyState::FBreath			: { FlyBreathState();	 }	break;
-	case EFlyState::FAttack_1		: { FlyAttack_1State();  }	break;
-	case EFlyState::FEndFly			: { EndFlyState();		 }	break;
+	case EFlyState::FBreath			: { /*FlyBreathState();*/ }	break;
+	case EFlyState::FAttack_1		: { /*FlyAttack_1State();*/ }	break;
+	case EFlyState::FEndFly			: { /*EndFlyState();*/ }	break;
 	default: break;
 	}
+}
+
+void UCEnemyFSM::StartState()
+{
+	mState = EEnemyState::Start;
+	Anim->eAnimState = mState;
 }
 
 // 대기 모션
@@ -105,7 +114,9 @@ void UCEnemyFSM::IdleState()
 	//적 탐지 프로세스
 	FVector dir = SearchEnemy();
 	currentTime += GetWorld()->DeltaTimeSeconds;
-	
+
+
+	/*
 	if (attCount >= MaxFlyCount){
 		mState = EEnemyState::Fly;
 		Anim->eAnimState = mState;
@@ -113,8 +124,9 @@ void UCEnemyFSM::IdleState()
 
 		return;
 	}
+	*/
 
-if (currentTime < idleDelayTime) { return; }
+//if (currentTime < idleDelayTime) { return; }
 
 	if (dir.Size() < attackRange) {
 		OnAttackProcess();
@@ -150,16 +162,38 @@ void UCEnemyFSM::MoveState()
 
 void UCEnemyFSM::FlyState()
 {
-	Anim->IsFly = true;
-	mFlyState = EFlyState::StartFly;
-	Anim->eFlyState = mFlyState;
+	 mFlyState = EFlyState::StartFly;
+	 Anim->eFlyState = mFlyState;
 }
 
 // 브레스 사용 모션
 void UCEnemyFSM::BreathState()
 {
 
+	//노티파이로 옮겼다. Breath_Start
+	//옮기면 안된다... 하나만 나감.
+	//!! 노티파이에 불값체크로 해놓으면 된다!
+	
+	if(!Anim->bIsBreath) { return; }
 
+
+	currentTime += GetWorld()->DeltaTimeSeconds;
+
+	if (currentTime > fireSpawn){ 
+
+	enemy->AttackFire();
+	currentTime = 0.f;
+	}
+	/*
+	currentTime += GetWorld()->DeltaTimeSeconds;
+	int count = 0;
+
+	if(currentTime > enemy->MaxFireTime){
+		enemy->AttackFire();
+		
+
+	}
+	*/
 }
 
 
@@ -179,7 +213,6 @@ void UCEnemyFSM::Attack_1State()
 	}
 	
 	*/
-
 }
 
 //================================================================================================
@@ -187,8 +220,7 @@ void UCEnemyFSM::Attack_1State()
 //비행 시작 모션
 void UCEnemyFSM::StartFlyState()
 {
-
-
+	Anim->bIsFly = true;
 }
 
 
@@ -197,11 +229,12 @@ void UCEnemyFSM::FlyIdleState()
 	UE_LOG(LogTemp, Warning, TEXT("111111111111"));
 
 	//적 탐지 프로세스
-	FVector dir = SearchEnemy();
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
 
 	//공격 횟수 채우면 착륙으로 변경
+
+
 	if (attFlyCount >= MaxLandCount) {
 		mFlyState = EFlyState::FEndFly;
 		Anim->eFlyState = mFlyState;
@@ -212,20 +245,21 @@ void UCEnemyFSM::FlyIdleState()
 
 if (currentTime < idleDelayTime) { return; }
 
-	if (dir.Size() < attackRange) {
+	FVector dir = SearchEnemy();
+
+	if (dir.Size() < breathRange) {
 		OnAttackProcess();
 		return;
 	}
 
-	// 임시 조건 : currentTime이 IdleTime보다 커졌을 경우 && dir까지의 거리가 탐색 범위보다 좁음
+	/*
 	if (dir.Size() < searchRange) {
 		mFlyState = EFlyState::FMove;
 		Anim->eFlyState = mFlyState;
-
-		currentTime = 0.f;
 	}
+	*/
 
-
+	currentTime = 0.f;
 }
 
 void UCEnemyFSM::FMoveState()
@@ -268,13 +302,13 @@ void UCEnemyFSM::FlyAttack_1State()
 // 착지 시점 / 착지 시작할 때를 다르게 해야 할 듯?
 void UCEnemyFSM::EndFlyState()
 {
-
-	/*
 	mState = EEnemyState::Idle;
 	Anim->eAnimState = mState;
-	*/
 
-	Anim->IsFly = false;
+	mFlyState = EFlyState::ReturnBase;
+	Anim->eAnimState = mState;
+
+	Anim->bIsFly = false;
 }
 
 //==============================================
@@ -306,8 +340,17 @@ void UCEnemyFSM::OnAttackProcess()
 
 	//UE_LOG(LogTemp, Warning, TEXT("2222222"));
 
-	if (Anim->IsFly == true){
+	if (Anim->bIsFly == true){
 		
+		mFlyState = EFlyState::FBreath;
+		Anim->eFlyState = mFlyState;
+
+		//Attack_1에 착지 모션이 있어서 착지 자체를 이쪽으로 하면 자연스럽게 땅으로 내려옴
+		if (attFlyCount > MaxFlyCount){
+			mFlyState = EFlyState::FAttack_1;
+			Anim->eFlyState = mFlyState;
+		}
+		/*
 		mState = EEnemyState::FlyAtt;
 		Anim->eAnimState = mState;
 
@@ -323,7 +366,7 @@ void UCEnemyFSM::OnAttackProcess()
 			Anim->eFlyState = mFlyState;
 			break;
 		}
-
+		*/
 		return;
 	}
 
@@ -331,7 +374,10 @@ void UCEnemyFSM::OnAttackProcess()
 	else {
 		mState = EEnemyState::Attack;
 		Anim->eAnimState = mState;
-
+		mAttState = EAttackState::Breath;
+		Anim->eAttackState = mAttState;
+		//테스트를 위해 브레스만 나오게 막아둠.
+		/*
 		switch (randomAttack)
 		{
 		case 1:
@@ -344,6 +390,7 @@ void UCEnemyFSM::OnAttackProcess()
 			Anim->eAttackState = mAttState;
 			break;
 		}
+		*/
 	}
 
 
@@ -352,9 +399,8 @@ void UCEnemyFSM::OnAttackProcess()
 //IsFly 상태에 따라 다름.
 void UCEnemyFSM::EndAttackProcess()
 {
-
 	//비행일 경우
-	if (Anim->IsFly == true){
+	if (Anim->bIsFly == true){
 		//랜덤 돌려서 Breath, Attack_1 결정
 		++attFlyCount;
 
@@ -362,7 +408,6 @@ void UCEnemyFSM::EndAttackProcess()
 
 		mFlyState = EFlyState::FlyIdle;
 		Anim->eFlyState = mFlyState;
-		
 		return;
 	}
 
@@ -371,7 +416,11 @@ void UCEnemyFSM::EndAttackProcess()
 		//랜덤 돌려서 Breath, Attack_1 결정
 		++attCount;
 
+		int saveRand = randomAttack;
 		randomAttack = FMath::RandRange(1, TotalAttKinds);
+		
+		//같은 애니메이션 연속으로 안 나오게 하기
+		while (saveRand == randomAttack) { randomAttack = FMath::RandRange(1, TotalAttKinds); }
 
 		mState = EEnemyState::Idle;
 		Anim->eAnimState = mState;
@@ -398,8 +447,17 @@ FVector UCEnemyFSM::SearchEnemy()
 //==================== Notify 관련 함수들 ====================
 
 void UCEnemyFSM::StartHighFly_END()
-{
+{	
+	UE_LOG(LogTemp, Warning, TEXT("AAAAAAA"));
+
 	mFlyState = EFlyState::FlyIdle;
-	Anim->eFlyState = mFlyState;
+	if(Anim){ Anim->eFlyState = mFlyState; }
+}
+
+void UCEnemyFSM::End_Opening()
+{
+	mState = EEnemyState::Idle;
+	if(Anim){ Anim->eAnimState = mState; }
+
 }
 

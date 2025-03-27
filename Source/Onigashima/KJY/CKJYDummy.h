@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "../ODH/VRPlayer.h"
 #include "CKJYDummy.generated.h"
 
 UCLASS()
-class ONIGASHIMA_API ACKJYDummy : public ACharacter
+class ONIGASHIMA_API ACKJYDummy : public AVRPlayer
 {
 	GENERATED_BODY()
 
