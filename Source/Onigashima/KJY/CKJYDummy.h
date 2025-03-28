@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,7 +8,7 @@
 #include "CKJYDummy.generated.h"
 
 UCLASS()
-class ONIGASHIMA_API ACKJYDummy : public AVRPlayer
+class ONIGASHIMA_API ACKJYDummy : public ACharacter
 {
 	GENERATED_BODY()
 
