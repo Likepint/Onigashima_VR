@@ -1,8 +1,9 @@
-#include "PJS/Characters/CCharacter_PJS.h"
+﻿#include "PJS/Characters/CCharacter_PJS.h"
 #include "Global.h"
 #include "Camera/CameraComponent.h"
 #include "PJS/Components/CTestMoveComponent.h"
 #include "PJS/Components/CBuildComponent.h"
+#include "PJS/Components/CInventoryComponent.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -20,6 +21,8 @@ ACCharacter_PJS::ACCharacter_PJS()
 	CHelpers::CreateActorComponent<UCTestMoveComponent>(this, &Movement, "Movement");
 
 	CHelpers::CreateActorComponent<UCBuildComponent>(this, &Build, "Build");
+
+	CHelpers::CreateActorComponent<UCInventoryComponent>(this, &Inventory, "Inventory");
 
 	CHelpers::GetAsset<UInputMappingContext>(&MappingContext, "/Script/EnhancedInput.InputMappingContext'/Game/PJS/Inputs/IMC_Context_PJS.IMC_Context_PJS'");
 
@@ -52,6 +55,8 @@ void ACCharacter_PJS::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		Movement->OnBindEnhancedInputSystem(EnhancedInput);
 
 		Build->OnBindEnhancedInputSystem(EnhancedInput);
+
+		Inventory->OnBindEnhancedInputSystem(EnhancedInput);
 
 	}
 

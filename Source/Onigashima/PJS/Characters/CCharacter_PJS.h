@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -19,6 +19,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UCBuildComponent* Build;
+	
+	UPROPERTY(VisibleAnywhere)
+	class UCInventoryComponent* Inventory;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Enhanced")
