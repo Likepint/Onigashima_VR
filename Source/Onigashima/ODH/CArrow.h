@@ -28,7 +28,16 @@ public:
 
 	void SetCollision(bool bValue);
 
-	void SetBool(bool bValue);
+	void SetBool(bool bValue, FVector FirePos, float Alpha);
+
+	//C++에서 선언하지만 블루프린트에서 내용을 구현해야함
+	//그대신 C++에서 함수를 부를 수 있음
+	UFUNCTION(BlueprintImplementableEvent, Category = Trail)
+	void StartTrail();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = Trail)
+	void EndTrail();
+
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* ArrowMesh;
@@ -40,6 +49,9 @@ public:
 
 private:
 	int32 DamageAmount = 1;
+
+	float MinPower = 200;
+	float MaxPower = 1200;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* Collision;

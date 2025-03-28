@@ -18,6 +18,7 @@
 #include "Components/BoxComponent.h"
 #include "CArrow.h"
 #include "Components/SphereComponent.h"
+#include "Components/ArrowComponent.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -204,6 +205,10 @@ AVRPlayer::AVRPlayer()
         Bow->SetRelativeLocationAndRotation(FVector(0, -0.784402f, 8.965752f),FRotator(0,0,85));
         Bow->SetRelativeScale3D(FVector(0.1775f));
 
+        ShootPos = CreateDefaultSubobject<UArrowComponent>(L"ShootPos");
+        ShootPos->SetupAttachment(Bow);
+        ShootPos->SetRelativeLocationAndRotation(FVector(0, 33.802818f,0),FRotator(0,90,0));
+
         BowColli=CreateDefaultSubobject<UBoxComponent>(L"BowStringCollision");
         BowColli->SetupAttachment(Bow);
         BowColli->SetRelativeLocation(FVector(0, -33.802818f, 2));
@@ -263,7 +268,7 @@ void AVRPlayer::Tick(float DeltaTime)
 
     if (bDetectBowString)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("bDetectBowString Is True"));
+        GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Red, TEXT("bDetectBowString Is True"));
     }
 
     if (Bow->IsVisible() && bDetectBowString && !bFindArrow && bLeftTrigger && bLeftGrap)
@@ -271,21 +276,22 @@ void AVRPlayer::Tick(float DeltaTime)
         AimArrow();
     }
 
-    if (bFindArrow)
-    {
-        //화살의 앞이 오른쪽 컨트롤러의 위치를 바라보게 만들면 저절로 나아가는 방향이 결정 되게 됨
-        FVector Target = Bow->GetComponentLocation() - ArrowPool[ArrowIndex]->GetActorLocation();
-        ArrowPool[ArrowIndex]->ArrowMesh->SetWorldRotation(Target.Rotation());
-    }
-
     //여기 부분에는 이제 화살이 날아가도록 만드는 코드로 변경해줘야 함
     if (bFindArrow && !bLeftTrigger || bFindArrow && !bLeftGrap)
     {
         bFindArrow = false;
-        /*ArrowPool[ArrowIndex]->SetBool(true);*/
-//         ArrowPool[ArrowIndex]->SetCollision(false);
-//         ArrowPool[ArrowIndex]->SetMesh(false);
-        ArrowPool[ArrowIndex]->SetBool(true);
+
+        ArrowPool[ArrowIndex]->DetachRootComponentFromParent(true);
+
+        //두 컨트롤러의 거리를 계산해서 float값으로 반환해줌
+        float DIstance = FVector::Distance(RightHandMesh->GetComponentLocation(), LeftHandMesh->GetComponentLocation());
+
+        //0과 1사이의 값으로 보정을 해줌
+        float Alpha = FMath::Clamp((DIstance - MinDistance)/(MaxDistance - MinDistance),0.0f,1.0f);
+
+        ArrowPool[ArrowIndex]->SetBool(true, ShootPos->GetForwardVector(), Alpha);
+
+        ArrowPool[ArrowIndex]->StartTrail();
     }
     
 //     if (Bow->IsVisible() && !SpawnArrow && bLeftTrigger && bLeftGrap)
@@ -444,7 +450,7 @@ void AVRPlayer::YButtonUp(const struct FInputActionValue& InputValue)
     
 }
 
-void AVRPlayer::AnimSet(int Anim, float Value, bool isMirror)
+void AVRPlayer::AnimSet(int32 Anim, float Value, bool isMirror)
 {
     //각 버튼에 따라 손 애니메이션이 나옴
     switch (Anim)
@@ -529,7 +535,7 @@ void AVRPlayer::ItemIndexMinus(const FInputActionValue& InputValue)
 	}
 }
 
-void AVRPlayer::ItemCollisionOnOff(int ItemNum)
+void AVRPlayer::ItemCollisionOnOff(int32 ItemNum)
 {
     //맨손 상태일 때는 아래 코드를 실행하지 않음
     if (ItemNum == 0)
@@ -606,16 +612,12 @@ void AVRPlayer::AimArrow()
 
             //오브젝트 풀의 해당 화살의 모습을 보이게 만듦
             ArrowPool[ArrowIndex]->SetMesh(true);
+            
+            ArrowPool[ArrowIndex]->AttachToComponent(Bow, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
-            //화살을 왼손에 붙임
-            ArrowPool[ArrowIndex]->AttachToComponent(LeftHandMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("index_03_lSocket"));
-
-
-            //위쪽에 bool을 사용해서 한번만 불러오게 만들었기에 회전이 일어나지 않음
-            //화살의 앞이 오른쪽 컨트롤러의 위치를 바라보게 만들면 저절로 나아가는 방향이 결정 되게 됨
-            //처음에 오른손 컨트롤러(Right Hand)의 위치를 사용하니 화살이 이상하게 바라봐서 Bow를 바라보게 바꿔봤음
-//             FVector Target = Bow->GetComponentLocation() - GetActorLocation();
-//             ArrowPool[ArrowIndex]->ArrowMesh->SetWorldRotation(Target.Rotation());
+            ArrowPool[ArrowIndex]->SetActorRelativeLocation(FVector(-8.455319f, -60.162721f, 16.62593f));
+            ArrowPool[ArrowIndex]->SetActorRelativeRotation(FRotator(-5, -278.0, 0));
+            ArrowPool[ArrowIndex]->SetActorRelativeScale3D(FVector(4.3f));
 
             break;
         }

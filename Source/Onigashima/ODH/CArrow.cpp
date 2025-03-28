@@ -34,7 +34,7 @@ void ACArrow::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Velocity = GetActorForwardVector() * 2000;
+	/*Velocity = GetActorForwardVector() * 2000;*/
 }
 
 // Called every frame
@@ -69,9 +69,11 @@ void ACArrow::SetCollision(bool bValue)
 	}
 }
 
-void ACArrow::SetBool(bool bValue)
+void ACArrow::SetBool(bool bValue, FVector FirePos , float Alpha)
 {
 	bShooting = bValue;
+	float Power = FMath::Lerp(MinPower,MaxPower, Alpha);
+	Velocity = FirePos * Power;
 }
 
 void ACArrow::ArrowOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -83,6 +85,8 @@ void ACArrow::ArrowOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	{
 		//enemy->OnDamageEnemy(DamageAmount)
 	}
+
+	EndTrail();
 	
 	SetMesh(false);
 	SetCollision(false);
