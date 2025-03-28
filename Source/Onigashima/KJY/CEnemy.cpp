@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "KJY/CEnemy.h"
@@ -37,7 +37,7 @@ ACEnemy::ACEnemy()
 
 
 #pragma region CollisionSocketPart
-	//================== ¼ÒÄÏ ºÙÀÌ´Â ÆÄÆ®
+	//================== ì†Œì¼“ ë¶™ì´ëŠ” íŒŒíŠ¸
 	Collision_1 = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision_1"));
 	Collision_1->SetupAttachment(EnemyComponent, TEXT("Collision_1"));
 	Collision_1->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -88,7 +88,7 @@ ACEnemy::ACEnemy()
 	Collision_15->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 
-	// ========================= ¹Ú½º Å©±â ¼³Á¤ ÆÄÆ®
+	// ========================= ë°•ìŠ¤ í¬ê¸° ì„¤ì • íŒŒíŠ¸
 
 	Collision_1->SetBoxExtent(FVector(60.f, 50.f, 50.f));
 
@@ -119,7 +119,7 @@ ACEnemy::ACEnemy()
 		UBoxComponent* NewCollision = CreateDefaultSubobject<UBoxComponent>(ComponentName);
 		NewCollision->SetupAttachment(EnemyComponent, *FString::Printf(TEXT("Collision_%d"), i));
 		NewCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		CollisionComponents.Add(NewCollision); // ¹è¿­¿¡ Ãß°¡
+		CollisionComponents.Add(NewCollision); // ë°°ì—´ì— ì¶”ê°€
 	}
 
 
@@ -169,7 +169,7 @@ ACEnemy::ACEnemy()
 	USkeletalMeshComponent* SkeletalMeshComp = GetMesh();
 	if (SkeletalMeshComp)
 	{
-		// Æú¸® Ãæµ¹ È°¼ºÈ­
+		// í´ë¦¬ ì¶©ëŒ í™œì„±í™”
 		SkeletalMeshComp->bEnablePerPolyCollision = true;
 		SkeletalMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		SkeletalMeshComp->SetCollisionResponseToAllChannels(ECR_Block);
@@ -218,13 +218,13 @@ void ACEnemy::AttackFire()
 	//if (currentTime > MaxFireTime){
 	//FTransform FirePos = FirePosComp->GetComponentTransform();
 	FTransform FirePos = ArrowComp->GetComponentTransform();
-	GetWorld()->SpawnActor<ACFireBall>(FireFactory, FirePos, spawnParams);
+	//GetWorld()->SpawnActor<ACFireBall>(FireFactory, FirePos, spawnParams);
 
 	UE_LOG(LogTemp, Warning, TEXT("Fire!!!!"));
 	//}
 
 
-	//½ÃÀÛÁöÁ¡ X, Y, Z ÁöÁ¡ ÁÂÇ¥ Âï¾îº¸ÀÚ
+	//ì‹œì‘ì§€ì  X, Y, Z ì§€ì  ì¢Œí‘œ ì°ì–´ë³´ì
 	//UE_LOG(LogTemp, Warning, TEXT("FirePos !!! X : % f, Y : % f, Z : % f"), FirePos.GetLocation().X, FirePos.GetLocation().Y, FirePos.GetLocation().Z);
 }
 
@@ -266,7 +266,7 @@ void ACEnemy::AttackEnd()
 
 void ACEnemy::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Ãæµ¹ÇÑ ¾×ÅÍ¸¦ AEnemyActor Å¬·¡½º·Î º¯È¯!
+	// ì¶©ëŒí•œ ì•¡í„°ë¥¼ AEnemyActor í´ë˜ìŠ¤ë¡œ ë³€í™˜!
 	ACKJYDummy* target = Cast<ACKJYDummy>(OtherActor);
 
 	if (target) {	UE_LOG(LogTemp,Warning,TEXT("Overlaped"));	}
