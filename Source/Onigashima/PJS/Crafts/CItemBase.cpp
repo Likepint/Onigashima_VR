@@ -2,6 +2,8 @@
 #include "Global.h"
 #include "Components/StaticMeshComponent.h"
 #include "PJS/Components/CInventoryComponent.h"
+#include "PJS/Widgets/CWidget_HUD.h"
+#include "PJS/Widgets/CUserWidget_Craft.h"
 
 ACItemBase::ACItemBase()
 {
@@ -34,6 +36,11 @@ void ACItemBase::InteractWith(ACharacter* OwnerCharacter)
 	CheckNull(inventory);
 
 	inventory->AddToInventory(this, 1);
+	
+	UCWidget_HUD* hud = Cast<UCWidget_HUD>(inventory->GetHUD());
+	CheckNull(hud);
+
+	hud->WBP_Craft->RefreshInventory();
 	
 	Destroy();
 

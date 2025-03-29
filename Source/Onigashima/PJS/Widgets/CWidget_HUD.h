@@ -9,12 +9,12 @@ class ONIGASHIMA_API UCWidget_HUD : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, meta = (BindWidget))
 	class UCanvasPanel* HUD;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, meta = (BindWidget))
-	class UUserWidget* WBP_Craft;
+	class UCUserWidget_Craft* WBP_Craft;
 	
 public:
 	UFUNCTION(BlueprintNativeEvent)
