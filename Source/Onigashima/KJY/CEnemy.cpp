@@ -11,6 +11,7 @@
 #include "../ODH/VRPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "CAimedFireBall.h"
+#include "CFireBall.h"
 
 
 // Sets default values
@@ -143,11 +144,11 @@ void ACEnemy::BeginPlay()
 	Super::BeginPlay();
 
 	HP = MaxHP;
-	
+
 	FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	ACFireBall* bulletFireBall = GetWorld()->SpawnActor()<ACFireBall>(FireFactory, spawnParams);
+	ACFireBall* bulletFireBall = GetWorld()->SpawnActor<ACFireBall> (FireFactory, spawnParams);
 	Maganine.Add(bulletFireBall);
 }
 
