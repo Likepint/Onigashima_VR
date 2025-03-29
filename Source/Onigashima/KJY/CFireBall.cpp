@@ -64,10 +64,15 @@ void ACFireBall::BeginPlay()
 	player = Cast<AVRPlayer>(actor);	//AVRPlayer로 바꾸기
 	destination = player->GetActorLocation();
 
-	/*
-	FTimerHandle deathTimer;
-	GetWorld()->GetTimerManager().SetTimer(deathTimer, this, &ACFireBall::Die, 2.f, false);
-	*/
+	//==================================
+	FActorSpawnParameters params;
+
+	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+	
+
+
+
 }
 
 
@@ -86,6 +91,14 @@ void ACFireBall::Tick(float DeltaTime)
 	if (currentTime > lifeSpan) { this->Destroy();}
 	//if (!player && dir.Size() <= 1.f) { this->Destroy(); }
 
+}
+
+
+
+void ACFireBall::SetActivateFireBall(bool _bValue)
+{
+	if (_bValue) { MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); }
+	else { MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
 }
 
 
