@@ -19,7 +19,6 @@
 #include "CArrow.h"
 #include "Components/SphereComponent.h"
 #include "Components/ArrowComponent.h"
-#include "../../../../Plugins/Runtime/XRBase/Source/XRBase/Public/HeadMountedDisplayFunctionLibrary.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
