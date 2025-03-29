@@ -51,6 +51,8 @@ private:
 public:
 	UUserWidget* GetHUD() { return HUD; }
 
+	TMap<class ACItemBase*, int32>& GetInventory() { return Inventory; };
+
 private:
 	void CheckLookAt();
 

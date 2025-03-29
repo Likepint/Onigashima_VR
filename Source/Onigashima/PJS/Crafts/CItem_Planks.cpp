@@ -5,11 +5,11 @@ ACItem_Planks::ACItem_Planks()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	Name = FName("Planks");
+	ItemStruct.Name = FName("Planks");
 
-	Description = FName("");
+	ItemStruct.Description = FName("");
 
-	category = EItemCategory::Parts;
+	ItemStruct.category = EItemCategory::Parts;
 
 }
 

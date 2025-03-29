@@ -11,6 +11,29 @@ enum class EItemCategory : uint8
 	Parts = 0, Ammo, Turret, MAX
 };
 
+USTRUCT()
+struct FItemStruct
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+	FName Name;
+
+	UPROPERTY(EditAnywhere)
+	FName Description;
+
+	UPROPERTY(EditAnywhere)
+	EItemCategory category = EItemCategory::MAX;
+
+	UPROPERTY(EditAnywhere)
+	bool bCraftable = false;
+
+	UPROPERTY(EditAnywhere)
+	class UTexture2D* Thumbnail;
+
+};
+
 UCLASS()
 class ONIGASHIMA_API ACItemBase
 	: public AActor
@@ -36,20 +59,11 @@ public:
 
 	virtual void InteractWith(class ACharacter* OwnerCharacter) override;
 
+public:
+	const FItemStruct& GetItemStruct() { return ItemStruct; };
+
 protected:
-	UPROPERTY(VisibleAnywhere)
-	FName Name;
-
-	UPROPERTY(VisibleAnywhere)
-	FName Description;
-
-	UPROPERTY(VisibleAnywhere)
-	EItemCategory category = EItemCategory::MAX;
-
-	UPROPERTY(VisibleAnywhere)
-	bool bCraftable = false;
-
-	UPROPERTY(VisibleAnywhere)
-	class UTexture2D* Thumbnail;
+	UPROPERTY(EditAnywhere)
+	FItemStruct ItemStruct;
 
 };

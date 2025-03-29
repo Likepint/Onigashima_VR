@@ -92,7 +92,7 @@ void UCInventoryComponent::CheckLookAt()
 bool UCInventoryComponent::AddToInventory(class ACItemBase* InItem, int32 Quantity)
 {
 	if (Inventory.Find(InItem))
-		Inventory.Add(InItem, FMath::Clamp(*(Inventory.Find(InItem) + Quantity), 0, 9999));
+		Inventory.Add(InItem, FMath::Clamp((*Inventory.Find(InItem) + Quantity), 0, 9999));
 	else Inventory.Add(InItem, Quantity);
 
 	return true;
