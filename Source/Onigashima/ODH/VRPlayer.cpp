@@ -19,12 +19,15 @@
 #include "CArrow.h"
 #include "Components/SphereComponent.h"
 #include "Components/ArrowComponent.h"
+#include "../../../../Plugins/Runtime/XRBase/Source/XRBase/Public/HeadMountedDisplayFunctionLibrary.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+    GetCapsuleComponent()->SetCollisionProfileName(L"Player");
 
     //Camera Create
     VRCam = CreateDefaultSubobject<UCameraComponent>(L"VRCam");
@@ -126,6 +129,7 @@ AVRPlayer::AVRPlayer()
         LeftHandMesh->SetRelativeRotation(FRotator(0, -90, 0));
 
         LeftHandColli=CreateDefaultSubobject<USphereComponent>(L"LeftHandCollision");
+        LeftHandColli->SetCollisionProfileName(L"LeftHand");
         LeftHandColli->SetupAttachment(LeftHandMesh);
         LeftHandColli->SetSphereRadius(5);
         LeftHandColli->SetRelativeLocation(FVector(0, 11,-2));
@@ -160,6 +164,7 @@ AVRPlayer::AVRPlayer()
         
         SpearColli = CreateDefaultSubobject<UBoxComponent>(L"SpearCollision");
         SpearColli->SetupAttachment(Spear);
+        SpearColli->SetCollisionProfileName(L"Items");
         SpearColli->SetRelativeLocation(FVector(0, 160, 5));
         SpearColli->SetBoxExtent(FVector(8.156206f, 77.76204f, 7.885468f));
         SpearColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::SpearOverlap);
@@ -175,6 +180,7 @@ AVRPlayer::AVRPlayer()
         PickItem->SetRelativeScale3D(FVector(0.1775f));
 
         PickColli =CreateDefaultSubobject<UBoxComponent>(L"PickCollision");
+        PickColli->SetCollisionProfileName(L"Items");
         PickColli->SetupAttachment(PickItem);
         PickColli->SetRelativeLocation(FVector(0, 93.617023, 7));
         PickColli->SetBoxExtent(FVector(17.624384f, 117.007257f, 25.261781f));
@@ -190,6 +196,7 @@ AVRPlayer::AVRPlayer()
         Axe->SetRelativeLocationAndRotation(FVector(-10, 0, 0), FRotator(90, 0, 180));
 
 		AxeColli = CreateDefaultSubobject<UBoxComponent>(L"AxeCollision");
+        AxeColli->SetCollisionProfileName(L"Items");
 		AxeColli->SetupAttachment(Axe);
 		AxeColli->SetRelativeLocationAndRotation(FVector(17, 4.838387f, 2.258435f), FRotator(0, 180, 90));
 		AxeColli->SetBoxExtent(FVector(5.524121f, 1.973751f, 7.189121f));
@@ -210,6 +217,7 @@ AVRPlayer::AVRPlayer()
         ShootPos->SetRelativeLocationAndRotation(FVector(0, 33.802818f,0),FRotator(0,90,0));
 
         BowColli=CreateDefaultSubobject<UBoxComponent>(L"BowStringCollision");
+        BowColli->SetCollisionProfileName(L"BowString");
         BowColli->SetupAttachment(Bow);
         BowColli->SetRelativeLocation(FVector(0, -33.802818f, 2));
         BowColli->SetBoxExtent(FVector(60.520447f, 4.949969f, 5.551495f));
@@ -281,15 +289,18 @@ void AVRPlayer::Tick(float DeltaTime)
     {
         bFindArrow = false;
 
-        ArrowPool[ArrowIndex]->DetachRootComponentFromParent(true);
-
         //두 컨트롤러의 거리를 계산해서 float값으로 반환해줌
         float DIstance = FVector::Distance(RightHandMesh->GetComponentLocation(), LeftHandMesh->GetComponentLocation());
 
         //0과 1사이의 값으로 보정을 해줌
         float Alpha = FMath::Clamp((DIstance - MinDistance)/(MaxDistance - MinDistance),0.0f,1.0f);
 
+        FVector arrowPos = FMath::Lerp(DefaultPos,MaxPos,Alpha);
+
+        ArrowPool[ArrowIndex]->SetActorRelativeLocation(FVector(arrowPos));
+
         ArrowPool[ArrowIndex]->SetBool(true, ShootPos->GetForwardVector(), Alpha);
+        ArrowPool[ArrowIndex]->SetCollision(true);
 
         ArrowPool[ArrowIndex]->StartTrail();
     }

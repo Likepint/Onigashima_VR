@@ -15,8 +15,10 @@ ACArrow::ACArrow()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Collision = CreateDefaultSubobject<UBoxComponent>(L"Collision");
+	Collision->SetCollisionProfileName(L"Items");
 	SetRootComponent(Collision);
 	Collision->SetBoxExtent(FVector(38.451927f, 0.832166f, 1.710501f));
+	Collision->OnComponentBeginOverlap.AddDynamic(this,&ACArrow::ArrowOverlap);
 
 	ArrowMesh = CreateDefaultSubobject<UStaticMeshComponent>(L"ArrowMesh");
 	ArrowMesh->SetupAttachment(Collision);
@@ -73,12 +75,16 @@ void ACArrow::SetBool(bool bValue, FVector FirePos , float Alpha)
 {
 	bShooting = bValue;
 	float Power = FMath::Lerp(MinPower,MaxPower, Alpha);
+	FString Message = FString::Printf(TEXT("%f"),Power);
+	GEngine->AddOnScreenDebugMessage(2, 10.0f, FColor::Black, Message);
 	Velocity = FirePos * Power;
 }
 
 void ACArrow::ArrowOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	bShooting = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
 
 	ACEnemy* enemy = Cast<ACEnemy>(OtherActor);
 	if (enemy)
