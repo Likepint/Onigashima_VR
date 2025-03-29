@@ -136,8 +136,8 @@ class UBoxComponent* Collision_15;
 	UPROPERTY(EditDefaultsOnly)
 	class UArrowComponent* ArrowComp;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FireFactory)
-	//TSubclassOf<class ACFireBall> FireFactory;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FireFactory)
+	TSubclassOf<class ACFireBall> FireFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FireFactory)
 	TSubclassOf<class ACAimedFireBall> AimedFireFactory;
