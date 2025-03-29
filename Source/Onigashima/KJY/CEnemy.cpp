@@ -11,6 +11,7 @@
 #include "../ODH/VRPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "CAimedFireBall.h"
+#include "CFireBall.h"
 
 
 // Sets default values
@@ -90,8 +91,9 @@ ACEnemy::ACEnemy()
 	Collision_15 = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision_15"));
 	Collision_15->SetupAttachment(EnemyComponent, TEXT("Collision_15"));
 	Collision_15->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+#pragma endregion
 
-
+#pragma region SetExtentBox
 	// ========================= 박스 크기 설정 파트
 
 	Collision_1->SetBoxExtent(FVector(60.f, 50.f, 50.f));
@@ -111,52 +113,6 @@ ACEnemy::ACEnemy()
 
 	Collision_5->SetRelativeLocation(FVector(20.f, 0.f, 0.f));
 	Collision_7->SetRelativeLocation(FVector(20.f, 0.f, 0.f));
-#pragma endregion
-
-
-
-#pragma region CollisionSocketPart_Gone
-/*
-	for (int32 i = 1; i <= 15; i++)
-	{
-		FName ComponentName = FName(*FString::Printf(TEXT("Collision_%d"), i));
-		UBoxComponent* NewCollision = CreateDefaultSubobject<UBoxComponent>(ComponentName);
-		NewCollision->SetupAttachment(EnemyComponent, *FString::Printf(TEXT("Collision_%d"), i));
-		NewCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		CollisionComponents.Add(NewCollision); // 배열에 추가
-	}
-
-
-	CollisionSize_1 = FVector(60.f, 50.f, 50.f);
-	CollisionSize_2 = FVector(100.f, 50.f, 50.f);
-	CollisionSize_3 = FVector(50.f, 50.f, 200.f);
-	CollisionSize_4 = FVector(50.f, 50.f, 200.f);
-	CollisionSize_5 = FVector(200.f, 180.f, 200.f);
-	CollisionSize_6 = FVector(200.f, 180.f, 200.f);
-
-	if (CollisionComponents.Num() >= 15)
-	{
-
-		CollisionComponents[0]->SetBoxExtent(CollisionSize_1);
-		CollisionComponents[1]->SetBoxExtent(CollisionSize_2);
-		CollisionComponents[2]->SetBoxExtent(CollisionSize_3);
-		CollisionComponents[3]->SetBoxExtent(CollisionSize_4);
-		CollisionComponents[4]->SetBoxExtent(CollisionSize_5);
-		CollisionComponents[5]->SetBoxExtent(CollisionSize_6);
-		CollisionComponents[6]->SetBoxExtent(CollisionSize_7);
-		CollisionComponents[7]->SetBoxExtent(CollisionSize_8);
-		CollisionComponents[8]->SetBoxExtent(CollisionSize_9);
-		CollisionComponents[9]->SetBoxExtent(CollisionSize_10);
-		CollisionComponents[10]->SetBoxExtent(CollisionSize_11);
-		CollisionComponents[11]->SetBoxExtent(CollisionSize_12);
-		CollisionComponents[12]->SetBoxExtent(CollisionSize_13);
-		CollisionComponents[13]->SetBoxExtent(CollisionSize_14);
-		CollisionComponents[14]->SetBoxExtent(CollisionSize_15);
-	}
-
-	//Collision_1->SetBoxExtent(FVector(100.f, 100.f, 100.f));
-	*/
-	
 #pragma endregion
 
 
@@ -188,10 +144,12 @@ void ACEnemy::BeginPlay()
 	Super::BeginPlay();
 
 	HP = MaxHP;
-	
-	//FirePosComp->GetAttachParent();
 
+	FActorSpawnParameters spawnParams;
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	ACFireBall* bulletFireBall = GetWorld()->SpawnActor<ACFireBall> (FireFactory, spawnParams);
+	Maganine.Add(bulletFireBall);
 }
 
 // Called every frame
@@ -211,16 +169,14 @@ void ACEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 
 void ACEnemy::AttackFire()
-{
-	FActorSpawnParameters spawnParams;
-	spawnParams.Owner = this;
-	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+{  
+	//FActorSpawnParameters spawnParams;
+	//spawnParams.Owner = this;
+	//spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+   
 
-
-	//if (currentTime > MaxFireTime){
-	//FTransform FirePos = FirePosComp->GetComponentTransform();
-	FTransform FirePos = ArrowComp->GetComponentTransform();
-	GetWorld()->SpawnActor<ACFireBall>(FireFactory, FirePos, spawnParams);
+	//FTransform FirePos = ArrowComp->GetComponentTransform();
+	//GetWorld()->SpawnActor<ACFireBall>(FireFactory, FirePos, spawnParams);
 
 	//}
 
@@ -242,8 +198,18 @@ void ACEnemy::AttackAimedFire()
 void ACEnemy::OnDamageEnemy(int32 _value)
 {
 	this->HP -= _value;
+
+	if (HP <= 0)
+	{
+		HP = 0;
+		this->Destroy();
+	}
 }
 
+
+
+
+/*
 void ACEnemy::AttackStart()
 {
 
@@ -252,23 +218,20 @@ void ACEnemy::AttackStart()
 
 void ACEnemy::AttackEnd()
 {
+//	GetWorld()->SweepMultiByProfile(OutOverlaps, this->FirePos, T.GetLocation(), T.GetRotation(), FName(TEXT("Pawn")), //FCollisionShape::MakeSphere(50.0f));
+//
+//
+//	for (const FHitResult& e : OutOverlaps){
+//		UE_LOG(LogTemp, Warning, TEXT("Collision !!! %s"), 
+//		*e.GetActor()->GetFullName(), *e.GetComponent()->GetFullName());
+//	}
+//
+//	UE_LOG(LogTemp, Warning, TEXT("StartPos !!! X : % f, Y : % f, Z : % f"), T.GetLocation().X, T.GetLocation().Y, //T.GetLocation().Z);
+//
+//	DrawDebugLine(GetWorld(), this->FirePos, T.GetLocation(), FColor::Emerald, true, -1, 0, 10);
 
-	/*
-	GetWorld()->SweepMultiByProfile(OutOverlaps, this->FirePos, T.GetLocation(), T.GetRotation(), FName(TEXT("Pawn")), FCollisionShape::MakeSphere(50.0f));
-
-
-	for (const FHitResult& e : OutOverlaps){
-		UE_LOG(LogTemp, Warning, TEXT("Collision !!! %s"), 
-		*e.GetActor()->GetFullName(), *e.GetComponent()->GetFullName());
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("StartPos !!! X : % f, Y : % f, Z : % f"), T.GetLocation().X, T.GetLocation().Y, T.GetLocation().Z);
-
-	DrawDebugLine(GetWorld(), this->FirePos, T.GetLocation(), FColor::Emerald, true, -1, 0, 10);
-
-	*/
-	
 }
+*/
 
 
 

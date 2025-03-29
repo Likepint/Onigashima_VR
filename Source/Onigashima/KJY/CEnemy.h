@@ -81,58 +81,6 @@ class UBoxComponent* Collision_15;
 #pragma endregion
 
 
-#pragma region CollisionSocketPart
-/*
-	UPROPERTY(EditDefaultsOnly)
-	TArray<class UBoxComponent*> CollisionComponents;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_1;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_2;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_3;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_4;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_5;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_6;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_7;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_8;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_9;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_10;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_11;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_12;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_13;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_14;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Collision")
-    FVector CollisionSize_15;
-*/
-#pragma endregion
-
 	UPROPERTY(EditDefaultsOnly)
 	class UArrowComponent* ArrowComp;
 
@@ -144,9 +92,15 @@ class UBoxComponent* Collision_15;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Status)
 	int32 HP = 0;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Status)
 	int32 MaxHP = 20;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bullet)
+	int MaxBulletCnt = 40;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bullet)
+	TArray<class ACFireBall*> Maganine;
+
+
 
 public:
 	//FBodyInstance* boneJaw;
@@ -162,13 +116,15 @@ public:
 	void OnDamageEnemy(int32 _value);
 
 
+	//실질적 깡통... 나중을 위해 주석처리만 해둠
+/*
 public:
 	UFUNCTION(BlueprintCallable, Category = "Attack_Notify")
 	void AttackStart();
 
 	UFUNCTION(BluePrintCallable, Category = "Attack_Notify")
 	void AttackEnd();
-
+*/
 	
 
 public:
