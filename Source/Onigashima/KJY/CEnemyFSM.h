@@ -93,8 +93,8 @@ private: // 시간 관련 변수
 
 
 private: // Range 변수
-	UPROPERTY(EditAnywhere, Category = FSM)
-	float attackRange = 900.f;
+	UPROPERTY(EditAnywhere, Category = FSM)   
+	float attackRange = 2000.f;
 	UPROPERTY(EditAnywhere, Category = FSM)
 	float breathRange = 3000.f;
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
