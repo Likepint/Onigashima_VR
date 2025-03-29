@@ -35,7 +35,9 @@ AVRPlayer::AVRPlayer()
 
     CHelpers::CreateActorComponent<UCBuildComponent>(this, &Build, "Build");
 
+
     //Input Setting
+#pragma region
     ConstructorHelpers::FObjectFinder<UInputMappingContext> Temp_IMC(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/ODH/Input/IMC_PlayerINput.IMC_PlayerInput'"));
     if (Temp_IMC.Succeeded())
     {
@@ -113,7 +115,11 @@ AVRPlayer::AVRPlayer()
     {
         IA_YButton = Temp_YButton.Object;
     }
+#pragma endregion
 
+
+    //아이템하고 도구들 생성
+#pragma region
     // LeftHand Create
     LeftSceneComp = CreateDefaultSubobject<UMotionControllerComponent>(L"ControllerLftGrip");
     LeftSceneComp->SetupAttachment(RootComponent);
@@ -221,6 +227,7 @@ AVRPlayer::AVRPlayer()
         BowColli->SetRelativeLocation(FVector(0, -33.802818f, 2));
         BowColli->SetBoxExtent(FVector(60.520447f, 4.949969f, 5.551495f));
     }
+#pragma endregion
 }
 
 // Called when the game starts or when spawned
@@ -282,21 +289,29 @@ void AVRPlayer::Tick(float DeltaTime)
     {
         AimArrow();
     }
+    
+    //활 시위 당기기 구현해보기?
+    if (bFindArrow)
+    {
+        //두 컨트롤러의 거리를 계산해서 float값으로 반환해줌
+        CurDistance = FVector::Distance(RightHandMesh->GetComponentLocation(), LeftHandMesh->GetComponentLocation());
+
+        //0과 1사이의 값으로 보정을 해줌
+        Alpha = FMath::Clamp((CurDistance - MinDistance) / (MaxDistance - MinDistance), 0.0f, 1.0f);
+
+        FVector arrowPos = FMath::Lerp(DefaultPos, MaxPos, Alpha);
+
+        ArrowPool[ArrowIndex]->SetActorRelativeLocation(FVector(arrowPos));
+    }
 
     //여기 부분에는 이제 화살이 날아가도록 만드는 코드로 변경해줘야 함
     if (bFindArrow && !bLeftTrigger || bFindArrow && !bLeftGrap)
     {
         bFindArrow = false;
 
-        //두 컨트롤러의 거리를 계산해서 float값으로 반환해줌
-        float DIstance = FVector::Distance(RightHandMesh->GetComponentLocation(), LeftHandMesh->GetComponentLocation());
+        ArrowPool[ArrowIndex]->DetachRootComponentFromParent(true);
 
-        //0과 1사이의 값으로 보정을 해줌
-        float Alpha = FMath::Clamp((DIstance - MinDistance)/(MaxDistance - MinDistance),0.0f,1.0f);
-
-        FVector arrowPos = FMath::Lerp(DefaultPos,MaxPos,Alpha);
-
-        ArrowPool[ArrowIndex]->SetActorRelativeLocation(FVector(arrowPos));
+        //FVector DebugVec = ArrowPool[ArrowIndex]->GetActorLocation();
 
         ArrowPool[ArrowIndex]->SetBool(true, ShootPos->GetForwardVector(), Alpha);
         ArrowPool[ArrowIndex]->SetCollision(true);
@@ -335,6 +350,8 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+    //키 입력 바인드코드들
+#pragma region
     auto InputSystem = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
     if (InputSystem)
@@ -370,6 +387,7 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         // Build
         Build->OnBindEnhancedInputSystem(InputSystem);
     }
+#pragma endregion
 }
 
 //플레이어 체력 감소 이벤트
@@ -378,6 +396,9 @@ void AVRPlayer::OnDamagePlayer(int32 damage)
     Health -= damage;
 }
 
+
+//각종 플레이어 키 입력 함수
+#pragma region
 //플레이어 이동
 void AVRPlayer::Move(const FInputActionValue& InputValue)
 {
@@ -460,6 +481,57 @@ void AVRPlayer::YButtonUp(const struct FInputActionValue& InputValue)
     
 }
 
+//After SetVisibility -> SetCollisionEnnabled
+void AVRPlayer::ItemInter(const struct FInputActionValue& InputValue)
+{
+    bRightBbutton = true;
+}
+
+void AVRPlayer::ItemInterUp(const struct FInputActionValue& InputValue)
+{
+    bRightBbutton = false;
+    RightGrapAllCheck(); //현재 들고 있는 도구를 비활성화 시켜줌
+}
+
+void AVRPlayer::ItemIndexPlus(const FInputActionValue& InputValue)
+{
+    //현재 손에 아이템이 안 보이는 상태여야 함
+    if (!bMeshOn)
+    {
+        ItemVisibleAllFalse();
+
+        //아이템 인덱스가 마지막 자리일 경우, 가장 처음 자리로 옮김
+        if (ItemIndex == ItemArray.Num() - 1)
+        {
+            ItemIndex = 0;
+        }
+        else
+        {
+            ItemIndex++;
+        }
+    }
+}
+
+void AVRPlayer::ItemIndexMinus(const FInputActionValue& InputValue)
+{
+    //현재 손에 아이템이 안 보이는 상태여야 함
+    if (!bMeshOn)
+    {
+        ItemVisibleAllFalse();
+
+        //아이템 인덱스가 0일 경우, 처음일 경우 가장 마지막 자리로 옮김
+        if (ItemIndex == 0)
+        {
+            ItemIndex = ItemArray.Num() - 1;
+        }
+        else
+        {
+            ItemIndex--;
+        }
+    }
+}
+#pragma endregion
+
 void AVRPlayer::AnimSet(int32 Anim, float Value, bool isMirror)
 {
     //각 버튼에 따라 손 애니메이션이 나옴
@@ -486,64 +558,7 @@ void AVRPlayer::AnimSet(int32 Anim, float Value, bool isMirror)
     }
 }
 
-// void AVRPlayer::OnItemMenu(const struct FInputActionValue& InputValue)
-// {
-//     //탭 또는 오른쪽 스틱 버튼이 눌린다면
-//     //아이템 UI 창이 열리지 않은 상태이면
-//     //if()
-// 
-//     //아이템 UI창을 띄워줌
-// }
 
-//After SetVisibility -> SetCollisionEnnabled
-void AVRPlayer::ItemInter(const struct FInputActionValue& InputValue)
-{
-    bRightBbutton = true;
-}
-
-void AVRPlayer::ItemInterUp(const struct FInputActionValue& InputValue)
-{
-    bRightBbutton = false;
-    RightGrapAllCheck(); //현재 들고 있는 도구를 비활성화 시켜줌
-}
-
-void AVRPlayer::ItemIndexPlus(const FInputActionValue& InputValue)
-{
-    //현재 손에 아이템이 안 보이는 상태여야 함
-	if (!bMeshOn)
-	{
-		ItemVisibleAllFalse();
-
-        //아이템 인덱스가 마지막 자리일 경우, 가장 처음 자리로 옮김
-		if (ItemIndex == ItemArray.Num() - 1)
-		{
-			ItemIndex = 0;
-		}
-		else
-		{
-			ItemIndex++;
-		}
-	}
-}
-
-void AVRPlayer::ItemIndexMinus(const FInputActionValue& InputValue)
-{
-    //현재 손에 아이템이 안 보이는 상태여야 함
-	if (!bMeshOn)
-	{
-		ItemVisibleAllFalse();
-
-        //아이템 인덱스가 0일 경우, 처음일 경우 가장 마지막 자리로 옮김
-		if (ItemIndex == 0)
-		{
-			ItemIndex = ItemArray.Num() - 1;
-		}
-		else
-		{
-			ItemIndex--;
-		}
-	}
-}
 
 void AVRPlayer::ItemCollisionOnOff(int32 ItemNum)
 {
@@ -575,6 +590,8 @@ void AVRPlayer::ItemCollisionOnOff(int32 ItemNum)
     }
 }
 
+//콜리전 충돌 이벤트들
+#pragma region
 void AVRPlayer::SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     auto actor = Cast<AActor>(OtherActor);
@@ -609,6 +626,7 @@ void AVRPlayer::LeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 {
     bDetectBowString = false;
 }
+#pragma endregion
 
 //화살을 생성하게 만들어주고, 화살 촉이 언제나 앞을 향하도록 함
 void AVRPlayer::AimArrow()
@@ -626,6 +644,7 @@ void AVRPlayer::AimArrow()
             ArrowPool[ArrowIndex]->AttachToComponent(Bow, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
             ArrowPool[ArrowIndex]->SetActorRelativeLocation(FVector(-8.455319f, -60.162721f, 16.62593f));
+
             ArrowPool[ArrowIndex]->SetActorRelativeRotation(FRotator(-5, -278.0, 0));
             ArrowPool[ArrowIndex]->SetActorRelativeScale3D(FVector(4.3f));
 

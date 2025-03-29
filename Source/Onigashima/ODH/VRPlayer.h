@@ -154,8 +154,10 @@ private: //Item equipment
 	FVector DefaultPos = FVector(-8.455319f, -60.162721f, 16.62593f);
 	FVector MaxPos = FVector(-11.57968f, -82.393703f, 18.590003f);
 
+	float CurDistance = 0.0f;
 	float MinDistance = 15;
 	float MaxDistance = 50;
+	float Alpha;
 
 	UPROPERTY(EditAnywhere, Category = Arrow)
 	TSubclassOf<class ACArrow> Arrow;
@@ -170,7 +172,6 @@ private: //Item equipment
 	bool bFindArrow = false;
 
 	void AimArrow();
-
 	bool bDetectBowString = false;
 
 	bool bRightTrigger = false;

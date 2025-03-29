@@ -51,7 +51,10 @@ private:
 	int32 DamageAmount = 1;
 
 	float MinPower = 200;
-	float MaxPower = 1200;
+	float MaxPower = 2000;
+
+	float CurTime = 0.0f;
+	float LifeTime = 5.5f;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* Collision;

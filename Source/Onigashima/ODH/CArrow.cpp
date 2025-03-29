@@ -48,15 +48,35 @@ void ACArrow::Tick(float DeltaTime)
 
 	if (bShooting)
 	{
+		CurTime +=DeltaTime;
+
+		if (CurTime >= LifeTime)
+		{
+			bShooting=false;
+			SetMesh(false);
+			SetCollision(false);
+			EndTrail();
+		}
+
 		Velocity.Z += Gravity * DeltaTime;
 
-		SetActorLocation(GetActorLocation() + Velocity * DeltaTime);
+		//새로 추가한 부분 이상하면 여기를 삭제하셈
+		FVector NextLocation = GetActorLocation() + Velocity * DeltaTime;
+
+		SetActorLocation(/*GetActorLocation() + Velocity * DeltaTime*/ NextLocation);
+
+		//FVector Dir = (NextLocation - GetActorLocation()).GetSafeNormal();
+
+		//FRotator Rot = FRotationMatrix::MakeFromX(Dir).Rotator();
+		//SetActorRotation(Rot);
 	}
 }
 
 void ACArrow::SetMesh(bool bValue)
 {
 	ArrowMesh->SetVisibility(bValue);
+
+	CurTime =0.0f;
 }
 
 void ACArrow::SetCollision(bool bValue)
@@ -89,7 +109,7 @@ void ACArrow::ArrowOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	ACEnemy* enemy = Cast<ACEnemy>(OtherActor);
 	if (enemy)
 	{
-		//enemy->OnDamageEnemy(DamageAmount)
+		enemy->OnDamageEnemy(DamageAmount);
 	}
 
 	EndTrail();
