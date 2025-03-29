@@ -8,6 +8,9 @@
 #include "CKJYDummy.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "../ODH/VRPlayer.h"
+#include "Kismet/GameplayStatics.h"
+#include "CAimedFireBall.h"
 
 
 // Sets default values
@@ -19,6 +22,7 @@ ACEnemy::ACEnemy()
 
 	EnemyComponent = GetMesh();
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>TmpBody(TEXT("/Script/Engine.SkeletalMesh'/Game/KJY/_Dragon8/Mesh/SK_Dragon8.SK_Dragon8'"));
+
 
 	if (TmpBody.Succeeded())
 	{
@@ -175,7 +179,7 @@ ACEnemy::ACEnemy()
 		SkeletalMeshComp->SetCollisionResponseToAllChannels(ECR_Block);
 	}
 		SkeletalMeshComp->OnComponentBeginOverlap.AddDynamic(this, &ACEnemy::OnOverlapBegin);
-	
+
 }
 
 // Called when the game starts or when spawned
@@ -208,8 +212,6 @@ void ACEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ACEnemy::AttackFire()
 {
-
-	//UE_LOG(LogTemp,Warning,TEXT("whyNoT...."));
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -218,16 +220,24 @@ void ACEnemy::AttackFire()
 	//if (currentTime > MaxFireTime){
 	//FTransform FirePos = FirePosComp->GetComponentTransform();
 	FTransform FirePos = ArrowComp->GetComponentTransform();
-	//GetWorld()->SpawnActor<ACFireBall>(FireFactory, FirePos, spawnParams);
+	GetWorld()->SpawnActor<ACFireBall>(FireFactory, FirePos, spawnParams);
 
-	UE_LOG(LogTemp, Warning, TEXT("Fire!!!!"));
 	//}
 
-
-	//시작지점 X, Y, Z 지점 좌표 찍어보자
-	//UE_LOG(LogTemp, Warning, TEXT("FirePos !!! X : % f, Y : % f, Z : % f"), FirePos.GetLocation().X, FirePos.GetLocation().Y, FirePos.GetLocation().Z);
 }
 
+
+void ACEnemy::AttackAimedFire()
+{
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	FTransform FirePos = ArrowComp->GetComponentTransform();
+	GetWorld()->SpawnActor<ACAimedFireBall>(AimedFireFactory, FirePos, spawnParams);
+
+
+}
 
 void ACEnemy::OnDamageEnemy(int32 _value)
 {
@@ -243,8 +253,6 @@ void ACEnemy::AttackStart()
 void ACEnemy::AttackEnd()
 {
 
-
-	
 	/*
 	GetWorld()->SweepMultiByProfile(OutOverlaps, this->FirePos, T.GetLocation(), T.GetRotation(), FName(TEXT("Pawn")), FCollisionShape::MakeSphere(50.0f));
 
@@ -266,15 +274,13 @@ void ACEnemy::AttackEnd()
 
 void ACEnemy::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// 충돌한 액터를 AEnemyActor 클래스로 변환!
-	ACKJYDummy* target = Cast<ACKJYDummy>(OtherActor);
+	ACKJYDummy* target = Cast<ACKJYDummy>(OtherActor);	//에로우에 맞는거 만들기
 
 	if (target) {	UE_LOG(LogTemp,Warning,TEXT("Overlaped"));	}
 	
 	if (target != nullptr)
 	{
-		target->Destroy();
-		this->Destroy();
+
 	}
 	
 

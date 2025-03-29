@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,7 +18,7 @@ class ONIGASHIMA_API UCEnemyAnim : public UAnimInstance
 	class ACEnemy* enemy;
 
 public:
-//±âº»ÀûÀ¸·Î eAnimState »ç¿ë, Fly³ª AttackÀÏ¶§¸¸ ¾Æ·¡ µÎ °³ ºÙ¿©ÁÜ
+//ê¸°ë³¸ì ìœ¼ë¡œ eAnimState ì‚¬ìš©, Flyë‚˜ Attackì¼ë•Œë§Œ ì•„ë˜ ë‘ ê°œ ë¶™ì—¬ì¤Œ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = FSM)
 	EEnemyState eAnimState	 = EEnemyState::Start;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = FSM)
@@ -27,9 +27,13 @@ public:
 	EFlyState eFlyState = EFlyState::ReturnBase;
 	                     
 
-public: // boolÃ¼Å© º¯¼ö 
+public: // boolì²´í¬ ë³€ìˆ˜ 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnim_bool)
 	bool bIsFly = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnim_bool)
+	bool bIsStartFly = true;
+
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnim_bool)
 	//bool IsAttack = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnim_bool)
@@ -38,13 +42,13 @@ public: // boolÃ¼Å© º¯¼ö
 	bool bIsBreath = false;
 
 
-public:	//¼öÄ¡°ª
+public:	//ìˆ˜ì¹˜ê°’
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnimState)
 	float speed = 0.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = EnemyAnimState)
 	float direction = 0.f;
 
-public:	// AnimNotify °ü·Ã
+public:	// AnimNotify ê´€ë ¨
 	UFUNCTION()
 	void AnimNotify_StartHighFly_END();
 	UFUNCTION()
@@ -53,12 +57,13 @@ public:	// AnimNotify °ü·Ã
 	void AnimNotify_Breath_END();
 	UFUNCTION()
 	void AnimNotify_FBreath_END();
+	
 	UFUNCTION()
 	void AnimNotify_FAttack_END();
-
+	/*
 	UFUNCTION()
 	void AnimNotify_AttackStart();
-
+	*/
 	UFUNCTION()
 	void AnimNotify_AttackEnd();
 
@@ -67,4 +72,7 @@ public:	// AnimNotify °ü·Ã
 
 	UFUNCTION()
 	void AnimNotify_End_Opening();
+
+	UFUNCTION()
+	void AnimNotify_Spawn_AimedFireBall();
 };

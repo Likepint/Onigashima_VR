@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -20,9 +20,9 @@ enum class EEnemyState : uint8
 
 
 UENUM()
-enum class EAttackState : uint8	// °ø°İ »óÅÂÀÏ ¶§
+enum class EAttackState : uint8	// ê³µê²© ìƒíƒœì¼ ë•Œ
 {
-	//¸ğµç State´Â °¢ StateÀÇ Base·Î µ¹¾Æ¿Í¾ß ÇÔ (ÇØ´ç Base¿¡¼­ MainBase(Idle)·Î º¹±Í)
+	//ëª¨ë“  StateëŠ” ê° Stateì˜ Baseë¡œ ëŒì•„ì™€ì•¼ í•¨ (í•´ë‹¹ Baseì—ì„œ MainBase(Idle)ë¡œ ë³µê·€)
 	ReturnBase	UMETA (DisplayName = "ReturnBase"),
 	Breath		UMETA (DisplayName = "Breath"),
 	Attack_1	UMETA (DisplayName = "Attack_1(Hand)"),
@@ -30,7 +30,7 @@ enum class EAttackState : uint8	// °ø°İ »óÅÂÀÏ ¶§
 
 
 UENUM()
-enum class EFlyState : uint8		// ºñÇà »óÅÂÀÏ ¶§
+enum class EFlyState : uint8		// ë¹„í–‰ ìƒíƒœì¼ ë•Œ
 {
 	ReturnBase		UMETA(DisplayName =  "FReturnBase"),
 	StartFly		UMETA(DisplayName  = "FStart"),
@@ -62,9 +62,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 
-private:	// ¼¼ÆÃ °ü·Ã
+private:	// ì„¸íŒ… ê´€ë ¨
 	UPROPERTY(VisibleAnywhere, Category = FSM)
-	class ACKJYDummy* target;
+	class AVRPlayer* target;
 	UPROPERTY()
 	class ACEnemy* enemy;
 	UPROPERTY()
@@ -79,7 +79,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
 	EFlyState mFlyState = EFlyState::ReturnBase;
 
-private: // ½Ã°£ °ü·Ã º¯¼ö
+private: // ì‹œê°„ ê´€ë ¨ ë³€ìˆ˜
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
 	float idleDelayTime = 0.1f;
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
@@ -92,56 +92,56 @@ private: // ½Ã°£ °ü·Ã º¯¼ö
 	float currentTime = 0.f;
 
 
-private: // Range º¯¼ö
+private: // Range ë³€ìˆ˜
 	UPROPERTY(EditAnywhere, Category = FSM)
 	float attackRange = 900.f;
 	UPROPERTY(EditAnywhere, Category = FSM)
-	float breathRange = 900.f;
+	float breathRange = 3000.f;
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
 	float searchRange = 3000.f;
 
 
 private:
-	// ºñÇà¿¡ °É¸®´Â ½Ã°£
+	// ë¹„í–‰ì— ê±¸ë¦¬ëŠ” ì‹œê°„
 	const float AnimTime = 3.f;
-	// ÀÌ °ªÀ» Ã¤¿ì¸é Âø·úÇÔ
+	// ì´ ê°’ì„ ì±„ìš°ë©´ ì°©ë¥™í•¨
 	const int MaxLandCount = 3;
-	// ÀÌ °ªÀ» Ã¤¿ì¸é ºñÇàÇÔ
+	// ì´ ê°’ì„ ì±„ìš°ë©´ ë¹„í–‰í•¨
 
 	const int MaxFlyCount = 3;
-	// ·£´ı°ø°İ °¹¼ö.
+	// ëœë¤ê³µê²© ê°¯ìˆ˜.
 	const int TotalAttKinds = 2;
-	// ºñÇà ·£´ı°ø°İ °¹¼ö.
+	// ë¹„í–‰ ëœë¤ê³µê²© ê°¯ìˆ˜.
 	const int FlyTotalAttKinds = 2;
 
 
-public:	//Count º¯¼ö. ºñÇà½Ã¿¡µµ »ç¿ë
-	// °ø°İ½Ã¸¶´Ù »õ·Î °è»êÇØ¼­ ·£´ı °ø°İÀ» ÇÔ
+public:	//Count ë³€ìˆ˜. ë¹„í–‰ì‹œì—ë„ ì‚¬ìš©
+	// ê³µê²©ì‹œë§ˆë‹¤ ìƒˆë¡œ ê³„ì‚°í•´ì„œ ëœë¤ ê³µê²©ì„ í•¨
 	int randomAttack = 1;
-	// ÀÏÁ¤ °ø°İ È½¼ö°¡ ½×ÀÌ¸é ºñÇà ÆĞÅÏ µ¹ÀÔ.
+	// ì¼ì • ê³µê²© íšŸìˆ˜ê°€ ìŒ“ì´ë©´ ë¹„í–‰ íŒ¨í„´ ëŒì….
 	int attCount = 0;
-	// ÀÏÁ¤ °ø°İ È½¼ö°¡ ½×ÀÌ¸é ºñÇà ÆĞÅÏ µ¹ÀÔ.
+	// ì¼ì • ê³µê²© íšŸìˆ˜ê°€ ìŒ“ì´ë©´ ë¹„í–‰ íŒ¨í„´ ëŒì….
 	int attFlyCount = 0;
 
 
-private:// State ÇÔ¼ö
+private:// State í•¨ìˆ˜
 	void StartState();
 	void IdleState();
 	void MoveState();
 	void FlyState();
 
-	//Attack State ÇÔ¼ö,
-	void BreathState();		//ºê·¹½º °ø°İ
-	void Attack_1State();	//¾Õ¹ß°ø°İ
+	//Attack State í•¨ìˆ˜,
+	void BreathState();		//ë¸Œë ˆìŠ¤ ê³µê²©
+	void Attack_1State();	//ì•ë°œê³µê²©
 
-	//Fly ÇÔ¼ö
-	void StartFlyState();		//Fly ½ÃÀÛ
+	//Fly í•¨ìˆ˜
+	void StartFlyState();		//Fly ì‹œì‘
 	void FlyIdleState();
 	void FMoveState();
-	void FlyBreathState();		//ºê·¹½º °ø°İ
-	void FlyAttack_1State();	//°í¹ÎÁß...
+	void FlyBreathState();		//ë¸Œë ˆìŠ¤ ê³µê²©
+	void FlyAttack_1State();	//ê³ ë¯¼ì¤‘...
 
-	// Dead ÇÔ¼ö
+	// Dead í•¨ìˆ˜
 	void DeadState();
 
 public:
@@ -151,7 +151,9 @@ public:
 	FVector SearchEnemy();
 	void EndFlyState();
 
-public:	//notify °ü·Ã
+
+public:	//notify ê´€ë ¨
 	void StartHighFly_END();
 	void End_Opening();
+
 };
