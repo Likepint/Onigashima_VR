@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -27,11 +27,13 @@ public:
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = FSM)
-	class ACKJYDummy* player;
+	class AVRPlayer* player;
 
 
 	float currentTime = 0.f;
 	float lifeSpan = 4.f;
+
+	FVector dir;
 
 public:
 	/*

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "KJY/CEnemyAnim.h"
@@ -16,67 +16,72 @@ void UCEnemyAnim::NativeUpdateAnimation(float DeltaSeconds)
 	FVector velocity = enemy->GetVelocity();
 	FVector forwardVector = enemy->GetActorForwardVector();
 
-
+	
 	speed = FVector::DotProduct(velocity, forwardVector);
-
 
 	FVector rightVector = enemy->GetActorRightVector();
 	direction = FVector::DotProduct(velocity, rightVector);
 }
 
 
-// ===================== ³ëÆ¼ÆÄÀÌ Ãß°¡ÇÏ´Â ÆÄÆ® =====================
+// ===================== ë…¸í‹°íŒŒì´ ì¶”ê°€í•˜ëŠ” íŒŒíŠ¸ =====================
 
 
 
 void UCEnemyAnim::AnimNotify_StartHighFly_END()
 {
-	enemy->FSM->StartHighFly_END();
+	if (enemy) { enemy->FSM->StartHighFly_END(); }
+	bIsStartFly = false;
 }
 
 void UCEnemyAnim::AnimNotify_ATT1_END()
 {
-	enemy->FSM->EndAttackProcess();
+	if (enemy) { enemy->FSM->EndAttackProcess(); }
 }
 
 void UCEnemyAnim::AnimNotify_Breath_END()
 {
-	enemy->FSM->EndAttackProcess();
+	if (enemy) { enemy->FSM->EndAttackProcess();  }
 	bIsBreath = false;
 }
 
 void UCEnemyAnim::AnimNotify_FBreath_END()
 {
-	enemy->FSM->EndAttackProcess();
+	if (enemy) { enemy->FSM->EndAttackProcess(); }
 	bIsBreath = false;
 }
+
 
 void UCEnemyAnim::AnimNotify_FAttack_END()
 {
 
-	enemy->FSM->EndFlyState();
+	if (enemy) { enemy->FSM->EndAttackProcess(); }
 }
 
+/*
 void UCEnemyAnim::AnimNotify_AttackStart()
 {
 	enemy->AttackStart();
 }
+*/
 
 void UCEnemyAnim::AnimNotify_AttackEnd()
 {
-	enemy->AttackEnd();
+	if (enemy){ enemy->FSM->EndAttackProcess(); }
 }
 
 void UCEnemyAnim::AnimNotify_Breath_Start()
 {
 	bIsBreath = true;
-
-
 }
 
 void UCEnemyAnim::AnimNotify_End_Opening()
 {
-	enemy->FSM->End_Opening();
+	if (enemy){ enemy->FSM->End_Opening(); }
+}
 
+void UCEnemyAnim::AnimNotify_Spawn_AimedFireBall()
+{
+	if (enemy) { enemy->AttackAimedFire(); }
 }
 

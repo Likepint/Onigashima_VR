@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "KJY/CFireBall.h"
@@ -58,10 +58,10 @@ void ACFireBall::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), ACKJYDummy::StaticClass());
+	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), AVRPlayer::StaticClass());
 	if (!actor) { return; }
 
-	player = Cast<ACKJYDummy>(actor);	//AVRPlayer·Î ¹Ù²Ù±â
+	player = Cast<AVRPlayer>(actor);	//AVRPlayerë¡œ ë°”ê¾¸ê¸°
 	destination = player->GetActorLocation();
 
 	/*
@@ -75,14 +75,6 @@ void ACFireBall::BeginPlay()
 void ACFireBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FVector dir;
-	/*
-	if (player){
-		dir = (destination - this->GetActorLocation()).GetSafeNormal();
-	}
-
-	else { dir = GetActorForwardVector(); }
-	*/
 
 	dir = GetActorForwardVector();
 	FVector Pos = this->GetActorLocation() + dir * speed * DeltaTime;
@@ -100,20 +92,19 @@ void ACFireBall::Tick(float DeltaTime)
 
 void ACFireBall::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Ãæµ¹ÇÑ ¾×ÅÍ¸¦ AEnemyActor Å¬·¡½º·Î º¯È¯!
 	AVRPlayer* targetPlayer = Cast<AVRPlayer>(OtherActor);
 	if (targetPlayer != nullptr)
 	{
-		targetPlayer->Destroy(); 	//ÇÃ·¹ÀÌ¾î Ã¼·Â °¨¼Ò ÇÔ¼ö·Î º¯°æ
-		this->Destroy();
+		targetPlayer->OnDamagePlayer(1);
+		this		->Destroy();
 	}
 
 
 	UCBaseComponent* targetBuildComp = Cast<UCBaseComponent>(OtherActor);
 	if (targetBuildComp != nullptr)
 	{
-		targetBuildComp->DestroyComponent();	//Ã¼·Â °¨¼Ò·Î º¯°æ.
-		this->Destroy();
+		targetBuildComp->DestroyComponent();	//ì²´ë ¥ ê°ì†Œë¡œ ë³€ê²½.
+		this			->Destroy();
 	}
 
 

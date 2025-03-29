@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -139,6 +139,9 @@ class UBoxComponent* Collision_15;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FireFactory)
 	TSubclassOf<class ACFireBall> FireFactory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FireFactory)
+	TSubclassOf<class ACAimedFireBall> AimedFireFactory;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Status)
 	int32 HP = 0;
 
@@ -155,9 +158,8 @@ public:
 
 public:
 	void AttackFire();
+	void AttackAimedFire();
 	void OnDamageEnemy(int32 _value);
-
-
 
 
 public:

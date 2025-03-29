@@ -1,10 +1,10 @@
-// 03.21 - °ø°Ý ÆÐÅÏ ¼öÇà½Ã¿¡´Â Roatation ±â´É »èÁ¦ (µé¾î°¡ ÀÖÀ¸¸é °ø°ÝÀ» ÇÇÇÒ ¼ö°¡ ¾øÀ»µí)
-// 03.22 - ÆòÅ¸ °ø°Ý ÆÐÅÏÀÌ ÇÏ³ª»ÓÀÌ¶ó Bite »èÁ¦. ÀÏ´Ü µÎ °³ ¸¸µé±â·Î (½Ã°£ ºÁ¼­ µ¹Áø°ø°Ý Ãß°¡)
-// 03.23 - ºñÇà»óÅÂ¶û ÀÏ¹Ý »óÅÂ¶û Á¦¹ý ´Þ¶ó¼­ State¸¦ ºÐ¸®ÇÏ´Â°Ô ³ªÀ»Áöµµ?
-//			¤¤ ºÐ¸®Çß´õ´Ï IsAttack ÇÊ¿ä ¾ø¾îÁü. Áö¿ò.
-// 03.23 - ºñÇàÇÒ¶§ ÁÂÇ¥°¡ ¾Æ·¡¿¡ °íÁ¤À¸·Î ÀÖ´Ù ¤Ð¤Ð (IsFallingÀÌ ¾ÈµÊ...) 
-//			¤¤ÀÏ´Ü ISFly·Î ºñÇà»óÅÂ Ã¼Å©ÇÏ±â·Î
-// 03.23 - ºñÇà °ø°Ý¸¶´Ù ³ôÀÌ°¡ ´Ù¸£´Ù... High / Low·Î ºÐ¸®ÇÏ°Å³ª ·çÆ®º» ²ø¾îÄ¡±â ¹è¿ö¾ß µÉ °Í °°À½...
+ï»¿// 03.21 - ê³µê²© íŒ¨í„´ ìˆ˜í–‰ì‹œì—ëŠ” Roatation ê¸°ëŠ¥ ì‚­ì œ (ë“¤ì–´ê°€ ìžˆìœ¼ë©´ ê³µê²©ì„ í”¼í•  ìˆ˜ê°€ ì—†ì„ë“¯)
+// 03.22 - í‰íƒ€ ê³µê²© íŒ¨í„´ì´ í•˜ë‚˜ë¿ì´ë¼ Bite ì‚­ì œ. ì¼ë‹¨ ë‘ ê°œ ë§Œë“¤ê¸°ë¡œ (ì‹œê°„ ë´ì„œ ëŒì§„ê³µê²© ì¶”ê°€)
+// 03.23 - ë¹„í–‰ìƒíƒœëž‘ ì¼ë°˜ ìƒíƒœëž‘ ì œë²• ë‹¬ë¼ì„œ Stateë¥¼ ë¶„ë¦¬í•˜ëŠ”ê²Œ ë‚˜ì„ì§€ë„?
+//			ã„´ ë¶„ë¦¬í–ˆë”ë‹ˆ IsAttack í•„ìš” ì—†ì–´ì§. ì§€ì›€.
+// 03.23 - ë¹„í–‰í• ë•Œ ì¢Œí‘œê°€ ì•„ëž˜ì— ê³ ì •ìœ¼ë¡œ ìžˆë‹¤ ã… ã…  (IsFallingì´ ì•ˆë¨...) 
+//			ã„´ì¼ë‹¨ ISFlyë¡œ ë¹„í–‰ìƒíƒœ ì²´í¬í•˜ê¸°ë¡œ
+// 03.23 - ë¹„í–‰ ê³µê²©ë§ˆë‹¤ ë†’ì´ê°€ ë‹¤ë¥´ë‹¤... High / Lowë¡œ ë¶„ë¦¬í•˜ê±°ë‚˜ ë£¨íŠ¸ë³¸ ëŒì–´ì¹˜ê¸° ë°°ì›Œì•¼ ë  ê²ƒ ê°™ìŒ...
 
 
 #include "KJY/CEnemyFSM.h"
@@ -29,17 +29,18 @@ void UCEnemyFSM::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), ACKJYDummy::StaticClass());
-	
+	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), AVRPlayer::StaticClass());
+
 	if (!actor) { return; }
-	target = Cast<ACKJYDummy>(actor);
+	target = Cast<AVRPlayer>(actor);
+
 	enemy = Cast< ACEnemy>(GetOwner());
-	
+
 	if (!enemy) { return; }
 	Anim = Cast<UCEnemyAnim>(enemy->GetMesh()->GetAnimInstance());
 
 
-	// È¤½Ã ¸ð¸¦ ÃÊ±âÈ­
+	// í˜¹ì‹œ ëª¨ë¥¼ ì´ˆê¸°í™”
 	randomAttack = FMath::RandRange(1, TotalAttKinds);
 	attCount = 0;
 
@@ -53,7 +54,7 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	//»óÅÂ Ã¼Å©
+	//ìƒíƒœ ì²´í¬
 
 
 #pragma region LogMessageState
@@ -67,7 +68,7 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	GEngine->AddOnScreenDebugMessage(2, 1, FColor::Blue, logMsgFly);
 #pragma endregion
 
-	//½ºÅ×ÀÌÆ® º¯°æ
+	//ìŠ¤í…Œì´íŠ¸ ë³€ê²½
 	switch (mState)
 	{
 	case EEnemyState::Start		 : { StartState();		}	break;
@@ -95,7 +96,7 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	case EFlyState::FlyIdle			: { FlyIdleState();		 }	break;
 	case EFlyState::FMove			: { FMoveState();		 }	break;
 
-	case EFlyState::FBreath			: { /*FlyBreathState();*/ }	break;
+	case EFlyState::FBreath			: { /*FlyBreathState();* }	break;
 	case EFlyState::FAttack_1		: { /*FlyAttack_1State();*/ }	break;
 	case EFlyState::FEndFly			: { /*EndFlyState();*/ }	break;
 	default: break;
@@ -106,25 +107,30 @@ void UCEnemyFSM::StartState()
 {
 	mState = EEnemyState::Start;
 	Anim->eAnimState = mState;
+
 }
 
-// ´ë±â ¸ð¼Ç
+
+// ëŒ€ê¸° ëª¨ì…˜
 void UCEnemyFSM::IdleState()
 {
-	//Àû Å½Áö ÇÁ·Î¼¼½º
+	//ì  íƒì§€ í”„ë¡œì„¸ìŠ¤
+
 	FVector dir = SearchEnemy();
+
+	AActor* newplayer = UGameplayStatics::GetActorOfClass(GetWorld(), AVRPlayer::StaticClass());
+	if (!newplayer) { return; }
+
 	currentTime += GetWorld()->DeltaTimeSeconds;
+	 
 
-
-	/*
-	if (attCount >= MaxFlyCount){
+	if (attCount >= MaxFlyCount) {
 		mState = EEnemyState::Fly;
 		Anim->eAnimState = mState;
 		attCount = 0;
 
 		return;
 	}
-	*/
 
 //if (currentTime < idleDelayTime) { return; }
 
@@ -135,7 +141,7 @@ void UCEnemyFSM::IdleState()
 		return;
 	}
 
-	// ÀÓ½Ã Á¶°Ç : dir±îÁöÀÇ °Å¸®°¡ Å½»ö ¹üÀ§º¸´Ù Á¼À½
+	// ìž„ì‹œ ì¡°ê±´ : dirê¹Œì§€ì˜ ê±°ë¦¬ê°€ íƒìƒ‰ ë²”ìœ„ë³´ë‹¤ ì¢ìŒ
 	if (dir.Size() < searchRange){
 		mState = EEnemyState::Move;
 		Anim->eAnimState = mState;
@@ -162,18 +168,16 @@ void UCEnemyFSM::MoveState()
 
 void UCEnemyFSM::FlyState()
 {
-	 mFlyState = EFlyState::StartFly;
-	 Anim->eFlyState = mFlyState;
+	if (Anim->bIsStartFly == true)
+	{
+		mFlyState = EFlyState::StartFly;
+		Anim->eFlyState = mFlyState;
+	}
 }
 
-// ºê·¹½º »ç¿ë ¸ð¼Ç
+// ë¸Œë ˆìŠ¤ ì‚¬ìš© ëª¨ì…˜
 void UCEnemyFSM::BreathState()
 {
-
-	//³ëÆ¼ÆÄÀÌ·Î ¿Å°å´Ù. Breath_Start
-	//¿Å±â¸é ¾ÈµÈ´Ù... ÇÏ³ª¸¸ ³ª°¨.
-	//!! ³ëÆ¼ÆÄÀÌ¿¡ ºÒ°ªÃ¼Å©·Î ÇØ³õÀ¸¸é µÈ´Ù!
-	
 	if(!Anim->bIsBreath) { return; }
 
 
@@ -184,29 +188,19 @@ void UCEnemyFSM::BreathState()
 	enemy->AttackFire();
 	currentTime = 0.f;
 	}
-	/*
-	currentTime += GetWorld()->DeltaTimeSeconds;
-	int count = 0;
-
-	if(currentTime > enemy->MaxFireTime){
-		enemy->AttackFire();
-		
-
-	}
-	*/
 }
 
 
-//¾Õ¹ß °ø°Ý ¸ð¼Ç
+//ì•žë°œ ê³µê²© ëª¨ì…˜
 void UCEnemyFSM::Attack_1State()
 {
 
 	/*
 	
-	//½Ã°£ÀÌ Èå¸£´Ù°¡ ÀÏÁ¤ ½Ã°£ °æ°ú½Ã
+	//ì‹œê°„ì´ íë¥´ë‹¤ê°€ ì¼ì • ì‹œê°„ ê²½ê³¼ì‹œ
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
-	//IdleState·Î º¯°æ
+	//IdleStateë¡œ ë³€ê²½
 	if ( currentTime > attackDelayTime){
 		currentTime = 0.f;
 		EndAttackProcess();
@@ -217,7 +211,8 @@ void UCEnemyFSM::Attack_1State()
 
 //================================================================================================
 //================================================================================================
-//ºñÇà ½ÃÀÛ ¸ð¼Ç
+
+//ë¹„í–‰ ì‹œìž‘ ëª¨ì…˜
 void UCEnemyFSM::StartFlyState()
 {
 	Anim->bIsFly = true;
@@ -228,11 +223,11 @@ void UCEnemyFSM::FlyIdleState()
 {
 	UE_LOG(LogTemp, Warning, TEXT("111111111111"));
 
-	//Àû Å½Áö ÇÁ·Î¼¼½º
+	//ì  íƒì§€ í”„ë¡œì„¸ìŠ¤
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
 
-	//°ø°Ý È½¼ö Ã¤¿ì¸é Âø·úÀ¸·Î º¯°æ
+	//ê³µê²© íšŸìˆ˜ ì±„ìš°ë©´ ì°©ë¥™ìœ¼ë¡œ ë³€ê²½
 
 
 	if (attFlyCount >= MaxLandCount) {
@@ -276,10 +271,10 @@ void UCEnemyFSM::FMoveState()
 
 void UCEnemyFSM::FlyBreathState()
 {
-	//½Ã°£ÀÌ Èå¸£´Ù°¡ ÀÏÁ¤ ½Ã°£ °æ°ú½Ã
+	//ì‹œê°„ì´ íë¥´ë‹¤ê°€ ì¼ì • ì‹œê°„ ê²½ê³¼ì‹œ
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
-	//IdleState·Î º¯°æ
+	//IdleStateë¡œ ë³€ê²½
 	if (currentTime > attackDelayTime) {
 		EndAttackProcess();
 		currentTime = 0.f;
@@ -290,16 +285,16 @@ void UCEnemyFSM::FlyBreathState()
 
 void UCEnemyFSM::FlyAttack_1State()
 {
-	//½Ã°£ÀÌ Èå¸£´Ù°¡ ÀÏÁ¤ ½Ã°£ °æ°ú½Ã
+	//ì‹œê°„ì´ íë¥´ë‹¤ê°€ ì¼ì • ì‹œê°„ ê²½ê³¼ì‹œ
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
-	//IdleState·Î º¯°æ
+	//IdleStateë¡œ ë³€ê²½
 	if (currentTime > attackDelayTime) {
 		EndAttackProcess();
 	}
 }
 
-// ÂøÁö ½ÃÁ¡ / ÂøÁö ½ÃÀÛÇÒ ¶§¸¦ ´Ù¸£°Ô ÇØ¾ß ÇÒ µí?
+// ì°©ì§€ ì‹œì  / ì°©ì§€ ì‹œìž‘í•  ë•Œë¥¼ ë‹¤ë¥´ê²Œ í•´ì•¼ í•  ë“¯?
 void UCEnemyFSM::EndFlyState()
 {
 	mState = EEnemyState::Idle;
@@ -313,7 +308,7 @@ void UCEnemyFSM::EndFlyState()
 
 //==============================================
 
-//»ç¸Á ¸ð¼Ç
+//ì‚¬ë§ ëª¨ì…˜
 void UCEnemyFSM::DeadState()
 {
 	
@@ -321,7 +316,7 @@ void UCEnemyFSM::DeadState()
 //==============================================
 
 
-//Å¸°Ù ¹æÇâÀ¸·Î ·ÎÅ×ÀÌ¼Ç
+//íƒ€ê²Ÿ ë°©í–¥ìœ¼ë¡œ ë¡œí…Œì´ì…˜
 void UCEnemyFSM::TargetRotation()
 {
 	FVector dir = SearchEnemy();
@@ -334,7 +329,7 @@ void UCEnemyFSM::TargetRotation()
 }
 
 
-//°ø°Ý ÆÐÅÏ ·£´ý °áÁ¤ÇØÁÖ´Â ÆÄÆ®
+//ê³µê²© íŒ¨í„´ ëžœë¤ ê²°ì •í•´ì£¼ëŠ” íŒŒíŠ¸
 void UCEnemyFSM::OnAttackProcess()
 {
 
@@ -345,12 +340,13 @@ void UCEnemyFSM::OnAttackProcess()
 		mFlyState = EFlyState::FBreath;
 		Anim->eFlyState = mFlyState;
 
-		//Attack_1¿¡ ÂøÁö ¸ð¼ÇÀÌ ÀÖ¾î¼­ ÂøÁö ÀÚÃ¼¸¦ ÀÌÂÊÀ¸·Î ÇÏ¸é ÀÚ¿¬½º·´°Ô ¶¥À¸·Î ³»·Á¿È
+		//Attack_1ì— ì°©ì§€ ëª¨ì…˜ì´ ìžˆì–´ì„œ ì°©ì§€ ìžì²´ë¥¼ ì´ìª½ìœ¼ë¡œ í•˜ë©´ ìžì—°ìŠ¤ëŸ½ê²Œ ë•…ìœ¼ë¡œ ë‚´ë ¤ì˜´
 		if (attFlyCount > MaxFlyCount){
 			mFlyState = EFlyState::FAttack_1;
 			Anim->eFlyState = mFlyState;
 		}
-		/*
+
+		
 		mState = EEnemyState::FlyAtt;
 		Anim->eAnimState = mState;
 
@@ -366,7 +362,7 @@ void UCEnemyFSM::OnAttackProcess()
 			Anim->eFlyState = mFlyState;
 			break;
 		}
-		*/
+		
 		return;
 	}
 
@@ -374,9 +370,10 @@ void UCEnemyFSM::OnAttackProcess()
 	else {
 		mState = EEnemyState::Attack;
 		Anim->eAnimState = mState;
+
 		mAttState = EAttackState::Breath;
 		Anim->eAttackState = mAttState;
-		//Å×½ºÆ®¸¦ À§ÇØ ºê·¹½º¸¸ ³ª¿À°Ô ¸·¾ÆµÒ.
+		//í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ë¸Œë ˆìŠ¤ë§Œ ë‚˜ì˜¤ê²Œ ë§‰ì•„ë‘ .
 		/*
 		switch (randomAttack)
 		{
@@ -396,12 +393,13 @@ void UCEnemyFSM::OnAttackProcess()
 
 }
 
-//IsFly »óÅÂ¿¡ µû¶ó ´Ù¸§.
+//IsFly ìƒíƒœì— ë”°ë¼ ë‹¤ë¦„.
 void UCEnemyFSM::EndAttackProcess()
 {
-	//ºñÇàÀÏ °æ¿ì
+
+	//ë¹„í–‰ì¼ ê²½ìš°
 	if (Anim->bIsFly == true){
-		//·£´ý µ¹·Á¼­ Breath, Attack_1 °áÁ¤
+		//ëžœë¤ ëŒë ¤ì„œ Breath, Attack_1 ê²°ì •
 		++attFlyCount;
 
 		randomAttack = FMath::RandRange(1, FlyTotalAttKinds);
@@ -411,15 +409,15 @@ void UCEnemyFSM::EndAttackProcess()
 		return;
 	}
 
-	//ºñÇàÀÌ ¾Æ´Ò °æ¿ì
+	//ë¹„í–‰ì´ ì•„ë‹ ê²½ìš°
 	else{
-		//·£´ý µ¹·Á¼­ Breath, Attack_1 °áÁ¤
+		//ëžœë¤ ëŒë ¤ì„œ Breath, Attack_1 ê²°ì •
 		++attCount;
 
 		int saveRand = randomAttack;
 		randomAttack = FMath::RandRange(1, TotalAttKinds);
 		
-		//°°Àº ¾Ö´Ï¸ÞÀÌ¼Ç ¿¬¼ÓÀ¸·Î ¾È ³ª¿À°Ô ÇÏ±â
+		//ê°™ì€ ì• ë‹ˆë©”ì´ì…˜ ì—°ì†ìœ¼ë¡œ ì•ˆ ë‚˜ì˜¤ê²Œ í•˜ê¸°
 		while (saveRand == randomAttack) { randomAttack = FMath::RandRange(1, TotalAttKinds); }
 
 		mState = EEnemyState::Idle;
@@ -432,7 +430,7 @@ void UCEnemyFSM::EndAttackProcess()
 }
 
 
-//Àû Å½Áö / Àû ¹æÇâ ¸®ÅÏ
+//ì  íƒì§€ / ì  ë°©í–¥ ë¦¬í„´
 FVector UCEnemyFSM::SearchEnemy()
 {
 	if ( target == nullptr || enemy == nullptr) { return FVector::ZeroVector; }
@@ -444,7 +442,7 @@ FVector UCEnemyFSM::SearchEnemy()
 }
 
 
-//==================== Notify °ü·Ã ÇÔ¼öµé ====================
+//==================== Notify ê´€ë ¨ í•¨ìˆ˜ë“¤ ====================
 
 void UCEnemyFSM::StartHighFly_END()
 {	
@@ -452,12 +450,12 @@ void UCEnemyFSM::StartHighFly_END()
 
 	mFlyState = EFlyState::FlyIdle;
 	if(Anim){ Anim->eFlyState = mFlyState; }
+
 }
 
 void UCEnemyFSM::End_Opening()
 {
 	mState = EEnemyState::Idle;
 	if(Anim){ Anim->eAnimState = mState; }
-
 }
 
