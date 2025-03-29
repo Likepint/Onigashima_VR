@@ -78,7 +78,7 @@ private:
 	void YButtonUp(const struct FInputActionValue& InputValue);
 
 	//Animation
-	void AnimSet(int Anim, float Value, bool isMirror);
+	void AnimSet(int32 Anim, float Value, bool isMirror);
 
 	//Item
 	/*void OnItemMenu(const struct FInputActionValue& InputValue);*/
@@ -87,7 +87,7 @@ private:
 	void ItemIndexPlus(const struct FInputActionValue& InputValue);
 	void ItemIndexMinus(const struct FInputActionValue& InputValue);
 
-	void ItemCollisionOnOff(int ItemNum);
+	void ItemCollisionOnOff(int32 ItemNum);
 
 	//Item Collision Overlap
 	UFUNCTION()
@@ -142,11 +142,20 @@ private: //Item equipment
 	class UStaticMeshComponent* Axe;
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* AxeColli;
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Bow;
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* BowColli;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UArrowComponent* ShootPos;
+
+	FVector DefaultPos = FVector(-8.455319f, -60.162721f, 16.62593f);
+	FVector MaxPos = FVector(-11.57968f, -82.393703f, 18.590003f);
+
+	float MinDistance = 15;
+	float MaxDistance = 50;
 
 	UPROPERTY(EditAnywhere, Category = Arrow)
 	TSubclassOf<class ACArrow> Arrow;
@@ -176,7 +185,7 @@ private: //Item equipment
 
 	TArray<UStaticMeshComponent*> ItemArray;
 
-	int ItemIndex = 0;
+	int32 ItemIndex = 0;
 
 	void TestItemPush();
 
