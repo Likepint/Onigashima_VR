@@ -158,75 +158,75 @@ AVRPlayer::AVRPlayer()
     }
 
     //Items
-    Spear = CreateDefaultSubobject<UStaticMeshComponent>(L"SpearComp");
-    Spear->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Spear(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Spear/Old_Wooden_Pole_ueqfdi0ga_Low.Old_Wooden_Pole_ueqfdi0ga_Low'");
-    if (Temp_Spear.Succeeded())
-    {
-        Spear->SetStaticMesh(Temp_Spear.Object);
-        Spear->SetRelativeScale3D(FVector(0.2f));
-        Spear->SetRelativeLocationAndRotation(FVector(-29, 0, 0), FRotator(0, 0, 90));
-        
-        SpearColli = CreateDefaultSubobject<UBoxComponent>(L"SpearCollision");
-        SpearColli->SetupAttachment(Spear);
-        SpearColli->SetCollisionProfileName(L"Items");
-        SpearColli->SetRelativeLocation(FVector(0, 160, 5));
-        SpearColli->SetBoxExtent(FVector(8.156206f, 77.76204f, 7.885468f));
-        SpearColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::SpearOverlap);
-    }
-
-    PickItem = CreateDefaultSubobject<UStaticMeshComponent>(L"PickComp");
-    PickItem->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    ConstructorHelpers::FObjectFinder<UStaticMesh>Temp_Pick(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Pick/pickaxe.pickaxe'");
-    if (Temp_Pick.Succeeded())
-    {
-        PickItem->SetStaticMesh(Temp_Pick.Object);
-        PickItem->SetRelativeLocationAndRotation(FVector(0,0, 8.965752f),FRotator(0, 0, 85));
-        PickItem->SetRelativeScale3D(FVector(0.1775f));
-
-        PickColli =CreateDefaultSubobject<UBoxComponent>(L"PickCollision");
-        PickColli->SetCollisionProfileName(L"Items");
-        PickColli->SetupAttachment(PickItem);
-        PickColli->SetRelativeLocation(FVector(0, 93.617023, 7));
-        PickColli->SetBoxExtent(FVector(17.624384f, 117.007257f, 25.261781f));
-        PickColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::PickOverlap);
-    }
-
-    Axe = CreateDefaultSubobject<UStaticMeshComponent>(L"AxeComp");
-    Axe->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Axe(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Axe/Medium/ueqgcaifa_tier_2.ueqgcaifa_tier_2'");
-    if (Temp_Axe.Succeeded())
-    {
-        Axe->SetStaticMesh(Temp_Axe.Object);
-        Axe->SetRelativeLocationAndRotation(FVector(-10, 0, 0), FRotator(90, 0, 180));
-
-		AxeColli = CreateDefaultSubobject<UBoxComponent>(L"AxeCollision");
-        AxeColli->SetCollisionProfileName(L"Items");
-		AxeColli->SetupAttachment(Axe);
-		AxeColli->SetRelativeLocationAndRotation(FVector(17, 4.838387f, 2.258435f), FRotator(0, 180, 90));
-		AxeColli->SetBoxExtent(FVector(5.524121f, 1.973751f, 7.189121f));
-        AxeColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::AxeOverlap);
-    }
-
-    Bow = CreateDefaultSubobject<UStaticMeshComponent>(L"BowComp");
-    Bow->SetupAttachment(RightHandMesh, L"hand_rSocket");
-    ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Bow(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Bow/cool_bow.cool_bow'");
-    if (Temp_Bow.Succeeded())
-    {
-        Bow->SetStaticMesh(Temp_Bow.Object);
-        Bow->SetRelativeLocationAndRotation(FVector(0, -0.784402f, 8.965752f),FRotator(0,0,85));
-        Bow->SetRelativeScale3D(FVector(0.1775f));
-
-        ShootPos = CreateDefaultSubobject<UArrowComponent>(L"ShootPos");
-        ShootPos->SetupAttachment(Bow);
-        ShootPos->SetRelativeLocationAndRotation(FVector(0, 33.802818f,0),FRotator(0,90,0));
-
-        BowColli=CreateDefaultSubobject<UBoxComponent>(L"BowStringCollision");
-        BowColli->SetCollisionProfileName(L"BowString");
-        BowColli->SetupAttachment(Bow);
-        BowColli->SetRelativeLocation(FVector(0, -33.802818f, 2));
-        BowColli->SetBoxExtent(FVector(60.520447f, 4.949969f, 5.551495f));
-    }
+//     Spear = CreateDefaultSubobject<UStaticMeshComponent>(L"SpearComp");
+//     Spear->SetupAttachment(RightHandMesh, L"hand_rSocket");
+//     ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Spear(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Spear/Old_Wooden_Pole_ueqfdi0ga_Low.Old_Wooden_Pole_ueqfdi0ga_Low'");
+//     if (Temp_Spear.Succeeded())
+//     {
+//         Spear->SetStaticMesh(Temp_Spear.Object);
+//         Spear->SetRelativeScale3D(FVector(0.2f));
+//         Spear->SetRelativeLocationAndRotation(FVector(-29, 0, 0), FRotator(0, 0, 90));
+//         
+//         SpearColli = CreateDefaultSubobject<UBoxComponent>(L"SpearCollision");
+//         SpearColli->SetupAttachment(Spear);
+//         SpearColli->SetCollisionProfileName(L"Items");
+//         SpearColli->SetRelativeLocation(FVector(0, 160, 5));
+//         SpearColli->SetBoxExtent(FVector(8.156206f, 77.76204f, 7.885468f));
+//         SpearColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::SpearOverlap);
+//     }
+// 
+//     PickItem = CreateDefaultSubobject<UStaticMeshComponent>(L"PickComp");
+//     PickItem->SetupAttachment(RightHandMesh, L"hand_rSocket");
+//     ConstructorHelpers::FObjectFinder<UStaticMesh>Temp_Pick(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Pick/pickaxe.pickaxe'");
+//     if (Temp_Pick.Succeeded())
+//     {
+//         PickItem->SetStaticMesh(Temp_Pick.Object);
+//         PickItem->SetRelativeLocationAndRotation(FVector(0,0, 8.965752f),FRotator(0, 0, 85));
+//         PickItem->SetRelativeScale3D(FVector(0.1775f));
+// 
+//         PickColli =CreateDefaultSubobject<UBoxComponent>(L"PickCollision");
+//         PickColli->SetCollisionProfileName(L"Items");
+//         PickColli->SetupAttachment(PickItem);
+//         PickColli->SetRelativeLocation(FVector(0, 93.617023, 7));
+//         PickColli->SetBoxExtent(FVector(17.624384f, 117.007257f, 25.261781f));
+//         PickColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::PickOverlap);
+//     }
+// 
+//     Axe = CreateDefaultSubobject<UStaticMeshComponent>(L"AxeComp");
+//     Axe->SetupAttachment(RightHandMesh, L"hand_rSocket");
+//     ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Axe(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Axe/Medium/ueqgcaifa_tier_2.ueqgcaifa_tier_2'");
+//     if (Temp_Axe.Succeeded())
+//     {
+//         Axe->SetStaticMesh(Temp_Axe.Object);
+//         Axe->SetRelativeLocationAndRotation(FVector(-10, 0, 0), FRotator(90, 0, 180));
+// 
+// 		AxeColli = CreateDefaultSubobject<UBoxComponent>(L"AxeCollision");
+//         AxeColli->SetCollisionProfileName(L"Items");
+// 		AxeColli->SetupAttachment(Axe);
+// 		AxeColli->SetRelativeLocationAndRotation(FVector(17, 4.838387f, 2.258435f), FRotator(0, 180, 90));
+// 		AxeColli->SetBoxExtent(FVector(5.524121f, 1.973751f, 7.189121f));
+//         AxeColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::AxeOverlap);
+//     }
+// 
+//     Bow = CreateDefaultSubobject<UStaticMeshComponent>(L"BowComp");
+//     Bow->SetupAttachment(RightHandMesh, L"hand_rSocket");
+//     ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Bow(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Bow/cool_bow.cool_bow'");
+//     if (Temp_Bow.Succeeded())
+//     {
+//         Bow->SetStaticMesh(Temp_Bow.Object);
+//         Bow->SetRelativeLocationAndRotation(FVector(0, -0.784402f, 8.965752f),FRotator(0,0,85));
+//         Bow->SetRelativeScale3D(FVector(0.1775f));
+// 
+//         ShootPos = CreateDefaultSubobject<UArrowComponent>(L"ShootPos");
+//         ShootPos->SetupAttachment(Bow);
+//         ShootPos->SetRelativeLocationAndRotation(FVector(0, 33.802818f,0),FRotator(0,90,0));
+// 
+//         BowColli=CreateDefaultSubobject<UBoxComponent>(L"BowStringCollision");
+//         BowColli->SetCollisionProfileName(L"BowString");
+//         BowColli->SetupAttachment(Bow);
+//         BowColli->SetRelativeLocation(FVector(0, -33.802818f, 2));
+//         BowColli->SetBoxExtent(FVector(60.520447f, 4.949969f, 5.551495f));
+//     }
 #pragma endregion
 }
 
@@ -247,14 +247,22 @@ void AVRPlayer::BeginPlay()
         }
     }
 
-    ItemVisibleAllFalse();
-
     ItemArray.Add(nullptr);
 
     LeftHandAnim = Cast<UCVRPlayerAnim>(LeftHandMesh->GetAnimInstance());
     RightHandAnim = Cast<UCVRPlayerAnim>(RightHandMesh->GetAnimInstance());
 
+    //아이템들 배열에 넣기
     TestItemPush();
+    
+    //정해진 배열만큼 아이템들의 *를 얻음
+    for (int32 i = 1; i < ItemArray.Num(); i++)
+    {
+        GetAddress(ItemArray[i], ItemArray[i]->ItemNum);
+    }
+
+    //아이템이 안보이도록 비활성화
+    ItemVisibleAllFalse();
 
     //화살을 오브젝트 풀을 사용하여 미리 스폰을 해줌
     for (int32 i = 0; i < MaxArrowCnt; i++)
@@ -267,6 +275,8 @@ void AVRPlayer::BeginPlay()
         Ar->SetCollision(false);
         ArrowPool.Add(Ar);
     }
+
+    
 }
 
 // Called every frame
@@ -276,7 +286,9 @@ void AVRPlayer::Tick(float DeltaTime)
 
     if (bRightBbutton && bRightGrap && !bMeshOn)
     {
-        ItemCollisionOnOff(ItemIndex);
+        if(ItemIndex == 0) return;
+
+        ItemCollisionOnOff(ItemArray[ItemIndex]->ItemNum);
         bMeshOn = true;
     }
 
@@ -285,7 +297,7 @@ void AVRPlayer::Tick(float DeltaTime)
         GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Red, TEXT("bDetectBowString Is True"));
     }
 
-    if (Bow->IsVisible() && bDetectBowString && !bFindArrow && bLeftTrigger && bLeftGrap)
+    if (ItemArray[1]->WasRecentlyRendered() && bDetectBowString && !bFindArrow && bLeftTrigger && bLeftGrap)
     {
         AimArrow();
     }
@@ -313,7 +325,7 @@ void AVRPlayer::Tick(float DeltaTime)
 
         //FVector DebugVec = ArrowPool[ArrowIndex]->GetActorLocation();
 
-        ArrowPool[ArrowIndex]->SetBool(true, ShootPos->GetForwardVector(), Alpha);
+        ArrowPool[ArrowIndex]->SetBool(true, SpawnBow->FirePos->GetForwardVector(), Alpha);
         ArrowPool[ArrowIndex]->SetCollision(true);
 
         ArrowPool[ArrowIndex]->StartTrail();
@@ -570,20 +582,28 @@ void AVRPlayer::ItemCollisionOnOff(int32 ItemNum)
     switch (ItemNum)
     {
     case 1:
-        Bow->SetVisibility(true);
-        BowColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+//         Bow->SetVisibility(true);
+//         BowColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	       SpawnBow->SetMesh(true);
+	       SpawnBow->SetCollision(true);
         break;
     case 2:
-        Spear->SetVisibility(true);
-        SpearColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+//         Spear->SetVisibility(true);
+//         SpearColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+          SpawnSpear->SetMesh(true);
+          SpawnSpear->SetCollision(true);
         break;
     case 3:
-        Axe->SetVisibility(true);
-        AxeColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+//         Axe->SetVisibility(true);
+//         AxeColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+           SpawnAxe->SetMesh(true);
+           SpawnAxe->SetCollision(true);
         break;
     case 4:
-        PickItem->SetVisibility(true);
-        PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+//         PickItem->SetVisibility(true);
+//         PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+           SpawnPick->SetMesh(true);
+           SpawnPick->SetCollision(true);
         break;
     default:
         break;
@@ -592,30 +612,30 @@ void AVRPlayer::ItemCollisionOnOff(int32 ItemNum)
 
 //콜리전 충돌 이벤트들
 #pragma region
-void AVRPlayer::SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-    auto actor = Cast<AActor>(OtherActor);
-
-    if(actor)
-    {
-        GEngine->AddOnScreenDebugMessage(20, 3.0f, FColor::Red, TEXT("Spear Collision"));
-    }
-}
-
-void AVRPlayer::AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-    auto actor = Cast<AActor>(OtherActor);
-
-    if (actor)
-    {
-        GEngine->AddOnScreenDebugMessage(20, 3.0f, FColor::Red, TEXT("Axe Collision"));
-    }
-}
-
-void AVRPlayer::PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-
-}
+// void AVRPlayer::SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+// {
+//     auto actor = Cast<AActor>(OtherActor);
+// 
+//     if(actor)
+//     {
+//         GEngine->AddOnScreenDebugMessage(20, 3.0f, FColor::Red, TEXT("Spear Collision"));
+//     }
+// }
+// 
+// void AVRPlayer::AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+// {
+//     auto actor = Cast<AActor>(OtherActor);
+// 
+//     if (actor)
+//     {
+//         GEngine->AddOnScreenDebugMessage(20, 3.0f, FColor::Red, TEXT("Axe Collision"));
+//     }
+// }
+// 
+// void AVRPlayer::PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+// {
+// 
+// }
 
 void AVRPlayer::LeftHandBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -641,7 +661,9 @@ void AVRPlayer::AimArrow()
             //오브젝트 풀의 해당 화살의 모습을 보이게 만듦
             ArrowPool[ArrowIndex]->SetMesh(true);
             
-            ArrowPool[ArrowIndex]->AttachToComponent(Bow, FAttachmentTransformRules::SnapToTargetIncludingScale);
+            /*ArrowPool[ArrowIndex]->AttachToComponent(SpawnBow, FAttachmentTransformRules::SnapToTargetIncludingScale);*/
+
+            ArrowPool[ArrowIndex]->AttachToActor(SpawnBow, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
             ArrowPool[ArrowIndex]->SetActorRelativeLocation(FVector(-8.455319f, -60.162721f, 16.62593f));
 
@@ -657,7 +679,7 @@ void AVRPlayer::AimArrow()
 void AVRPlayer::RightGrapAllCheck()
 {
     if(ItemIndex != 0)
-        ItemArray[ItemIndex]->SetVisibility(false);
+        ItemVisibleAllFalse();
 
     bMeshOn = false;
 }
@@ -665,22 +687,75 @@ void AVRPlayer::RightGrapAllCheck()
 //아이템을 먼저 배열에 넣음.
 void AVRPlayer::TestItemPush()
 {
-    ItemArray.Add(Bow);
-    ItemArray.Add(Spear);
-    ItemArray.Add(Axe);
-    ItemArray.Add(PickItem);
+//     ItemArray.Add(Bow);
+//     ItemArray.Add(Spear);
+//     ItemArray.Add(Axe);
+//     ItemArray.Add(PickItem);
+
+//     TestArray.Add(CBow->GetWorld()->SpawnActor<ACBow>(CBow,FVector(0),FRotator(0)));
+//     TestArray.Add(CAxe->GetWorld()->SpawnActor<ACAxe>(CAxe, FVector(0), FRotator(0)));
+//     TestArray.Add(CSpear->GetWorld()->SpawnActor<ACBow>(CSpear, FVector(0), FRotator(0)));
+//     TestArray.Add(CPick->GetWorld()->SpawnActor<ACBow>(CPick, FVector(0), FRotator(0)));
+
+    SetItems(CBow,FVector(0, 0, 7),FRotator(0, 0, 90));
+    SetItems(CAxe,FVector(-30.560979f, -0.261085f, -3.286248f),FRotator(0,180,90));
+    SetItems(CSpear,FVector(-64,0,0), FRotator(0,90,0));
+    SetItems(CPick, FVector(-49, 0, -14), FRotator(0, -270, -270));
 }
 
 //아이템 비활성화 및 콜리전 충돌 처리 없애는 작업
 void AVRPlayer::ItemVisibleAllFalse()
 {
-    Spear->SetVisibility(false);
-    PickItem->SetVisibility(false);
-    Axe->SetVisibility(false);
-    Bow->SetVisibility(false);
+//     Spear->SetVisibility(false);
+//     PickItem->SetVisibility(false);
+//     Axe->SetVisibility(false);
+//     Bow->SetVisibility(false);
+// 
+//     SpearColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+//     AxeColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+//     BowColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+//     PickColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+       
+       SpawnAxe->SetMesh(false);
+       SpawnAxe->SetCollision(false);
+       SpawnSpear->SetMesh(false);
+       SpawnSpear->SetCollision(false);
+       SpawnBow->SetMesh(false);
+       SpawnBow->SetCollision(false);
+       SpawnPick->SetMesh(false);
+       SpawnPick->SetCollision(false);
+}
 
-    SpearColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    AxeColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    BowColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    PickColli->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+void AVRPlayer::GetAddress(ACItem* Item, int32 itemNum)
+{
+    //1일 경우 활, 2일 경우 창, 3일 경우 도끼, 4일 경우 곡괭이
+    switch(itemNum)
+    {
+    case 1:
+        SpawnBow = Cast<ACBow>(Item);
+        break;
+    case 2:
+        SpawnSpear = Cast<ACSpear>(Item);
+        break;
+    case 3:
+        SpawnAxe = Cast<ACAxe>(Item);
+        break;
+    case 4:
+        SpawnPick = Cast<ACPick>(Item);
+        break;
+    default:
+        break;
+    }
+}
+
+void AVRPlayer::SetItems(TSubclassOf<class ACItem> ItemName, FVector SetPos, FRotator SetRot)
+{
+    ACItem* item = GetWorld()->SpawnActor<ACItem>(ItemName, FVector(0), FRotator(0));
+    
+    ItemArray.Add(item);
+
+    item->AttachToComponent(RightHandMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, L"hand_rSocket");
+
+    item->SetActorRelativeLocation(SetPos);
+    item->SetActorRelativeRotation(SetRot);
 }

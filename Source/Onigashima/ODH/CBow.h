@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -16,11 +16,16 @@ public:
 	// Sets default values for this actor's properties
 	ACBow();
 
+	void SetMesh(bool bValue);
+
+	void SetCollision(bool bValue);
+
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* CollisionComp;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* MeshComp;
 
-	
+	UPROPERTY(EditDefaultsOnly)
+	class UArrowComponent* FirePos;
 };
