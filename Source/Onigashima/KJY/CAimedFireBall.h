@@ -36,10 +36,13 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = AimedFSM)
 	class AVRPlayer* Aimedplayer;
 
-private:
+	UPROPERTY(VisibleAnywhere, Category = AimedFSM)
+	class ACEnemy* enemy;
 
+private:
 	float currentTime = 0.f;
-	float lifeSpan = 10.f;
+	float lifeSpan = 5.f;
+	int maxFire = 0;
 
 public:
 
@@ -56,7 +59,7 @@ public:
 	float timePowerA = 0.f;
 	float timePowerB = 0.f;
 
-	float speed = 1000.f;
+	float speed = 3000.f;
 
 	FVector destination;
 
