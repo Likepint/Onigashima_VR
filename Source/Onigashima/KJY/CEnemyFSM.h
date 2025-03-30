@@ -9,6 +9,7 @@
 UENUM()
 enum class EEnemyState : uint8
 {
+	Sleep		UMETA(DisplayName = "Sleep"),
 	Start		UMETA(DisplayName = "Start"),
 	Idle		UMETA (DisplayName = "Idle"),
 	Move		UMETA (DisplayName = "Move"),
@@ -73,7 +74,7 @@ private:	// 세팅 관련
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
-	EEnemyState mState = EEnemyState::Start;
+	EEnemyState mState = EEnemyState::Sleep;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
 	EAttackState mAttState = EAttackState::ReturnBase;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
@@ -94,11 +95,11 @@ private: // 시간 관련 변수
 
 private: // Range 변수
 	UPROPERTY(EditAnywhere, Category = FSM)   
-	float attackRange = 2000.f;
+	float attackRange = 4000.f;
 	UPROPERTY(EditAnywhere, Category = FSM)
-	float breathRange = 3000.f;
+	float breathRange = 6000.f;
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
-	float searchRange = 3000.f;
+	float searchRange = 9000.f;
 
 
 private:
@@ -125,6 +126,7 @@ public:	//Count 변수. 비행시에도 사용
 
 
 private:// State 함수
+	void SleepState();
 	void StartState();
 	void IdleState();
 	void MoveState();
@@ -150,10 +152,11 @@ public:
 	void EndAttackProcess();
 	FVector SearchEnemy();
 	void EndFlyState();
-
+	void ImDead();
 
 public:	//notify 관련
 	void StartHighFly_END();
 	void End_Opening();
+	void Sleep_END();
 
 };

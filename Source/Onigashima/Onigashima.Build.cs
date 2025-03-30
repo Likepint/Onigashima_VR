@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 using UnrealBuildTool;
 
@@ -15,7 +15,10 @@ public class Onigashima : ModuleRules
         PrivateDependencyModuleNames.Add("Engine");
         PrivateDependencyModuleNames.Add("InputCore");
 
-		PublicDependencyModuleNames.Add("EnhancedInput");
+        PrivateDependencyModuleNames.Add("MovieScene");
+        PrivateDependencyModuleNames.Add("LevelSequence");
+
+        PublicDependencyModuleNames.Add("EnhancedInput");
 
         PublicDependencyModuleNames.Add("UMG");
 
@@ -28,6 +31,7 @@ public class Onigashima : ModuleRules
         PublicDependencyModuleNames.Add("ProceduralMeshComponent");
 
         PublicDependencyModuleNames.Add("HeadMountedDisplay");
+       
 
         // Uncomment if you are using Slate UI
         // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

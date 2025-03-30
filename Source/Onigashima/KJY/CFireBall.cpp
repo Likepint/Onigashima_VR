@@ -25,32 +25,16 @@ ACFireBall::ACFireBall()
 	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetupAttachment(SphereComp);
-
-	ConstructorHelpers::FObjectFinder<UStaticMesh> tmpMesh(TEXT("/Script/Engine.Material'/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial'"));
+	
+	ConstructorHelpers::FObjectFinder<UStaticMesh> tmpMesh(TEXT("/Script/Engine.StaticMesh'/Engine/EditorMeshes/ArcadeEditorSphere.ArcadeEditorSphere'"));
 	if (tmpMesh.Succeeded())
 	{
 		MeshComp->SetStaticMesh(tmpMesh.Object);
 	}
-
+	
 
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ACFireBall::OnOverlapBegin);
-
-
-	/*
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	MeshComp->SetupAttachment(RootComponent);
-	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComp->SetRelativeScale3D(FVector(.5f));
-
-
-	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MoveComp"));
-	MovementComp->SetUpdatedComponent(RootComponent);
-	MovementComp->InitialSpeed = 5000.f;
-	MovementComp->MaxSpeed = 5000.f;
-	MovementComp->bShouldBounce = false;
-
-	InitialLifeSpan = 2.f;
-	*/              
+     
 }
 
 // Called when the game starts or when spawned
@@ -68,10 +52,6 @@ void ACFireBall::BeginPlay()
 	FActorSpawnParameters params;
 
 	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	
-	
-
-
 
 }
 
@@ -82,14 +62,15 @@ void ACFireBall::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	dir = GetActorForwardVector();
-	FVector Pos = this->GetActorLocation() + dir * speed * DeltaTime;
+	FVector Pos = this->GetActorLocation() + dir* speed * DeltaTime;
 
 	SetActorLocation(Pos);
 
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
 	if (currentTime > lifeSpan) { this->Destroy();}
-	//if (!player && dir.Size() <= 1.f) { this->Destroy(); }
+
+	//if (currentTime > lifeSpan) { this->SetActivateFireBall(false); }
 
 }
 
@@ -97,8 +78,17 @@ void ACFireBall::Tick(float DeltaTime)
 
 void ACFireBall::SetActivateFireBall(bool _bValue)
 {
-	if (_bValue) { MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); }
-	else { MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
+	MeshComp->SetVisibility(_bValue);
+
+	if (_bValue) { 
+		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); 
+		//currentTime = 0.f;
+	}
+
+	else { 
+		MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+		//currentTime = 0.f;
+	}
 }
 
 
@@ -110,6 +100,8 @@ void ACFireBall::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class
 	{
 		targetPlayer->OnDamagePlayer(1);
 		this		->Destroy();
+
+		//SetActivateFireBall(false);
 	}
 
 
@@ -118,6 +110,7 @@ void ACFireBall::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class
 	{
 		targetBuildComp->DestroyComponent();	//체력 감소로 변경.
 		this			->Destroy();
+		//SetActivateFireBall(false);
 	}
 
 

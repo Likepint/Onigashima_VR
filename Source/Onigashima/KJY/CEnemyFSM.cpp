@@ -71,20 +71,21 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	//스테이트 변경
 	switch (mState)
 	{
-	case EEnemyState::Start		 : { StartState();		}	break;
-	case EEnemyState::Idle		 : { IdleState();		}	break;
-	case EEnemyState::Move		 : { MoveState();		}	break;
+	case EEnemyState::Sleep		 : { SleepState();	}	break;
+	case EEnemyState::Start		 : { StartState();	}	break;
+	case EEnemyState::Idle		 : { IdleState();	}	break;
+	case EEnemyState::Move		 : { MoveState();	}	break;
 	case EEnemyState::Attack	 : {  }	break;
-	case EEnemyState::Dead		 : { DeadState();		}	break;
-	case EEnemyState::Fly		 : { FlyState ();		}	break;
+	case EEnemyState::Dead		 : { DeadState();	}	break;
+	case EEnemyState::Fly		 : { FlyState ();	}	break;
 	case EEnemyState::FlyAtt	 : {  }	break;
 	}
 
 	switch (mAttState)
 	{
 	case EAttackState::ReturnBase	: {  }	break;
-	case EAttackState::Breath		: { BreathState();		}	break;
-	case EAttackState::Attack_1		: { Attack_1State();	}	break;
+	case EAttackState::Breath		: { BreathState();	}	break;
+	case EAttackState::Attack_1		: { Attack_1State();}	break;
 
 	default: break;
 	}
@@ -92,15 +93,25 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	switch (mFlyState)
 	{
 	case EFlyState::ReturnBase		: {  }	break;
-	case EFlyState::StartFly		: { StartFlyState();	 }	break;
-	case EFlyState::FlyIdle			: { FlyIdleState();		 }	break;
-	case EFlyState::FMove			: { FMoveState();		 }	break;
+	case EFlyState::StartFly		: { StartFlyState();	}	break;
+	case EFlyState::FlyIdle			: { FlyIdleState();		}	break;
+	case EFlyState::FMove			: { FMoveState();		}	break;
 
-	case EFlyState::FBreath			: { /*FlyBreathState();* }	break;
-	case EFlyState::FAttack_1		: { /*FlyAttack_1State();*/ }	break;
+	case EFlyState::FBreath			: { FlyBreathState(); }	break;
+	case EFlyState::FAttack_1		: { FlyAttack_1State(); }	break;
 	case EFlyState::FEndFly			: { /*EndFlyState();*/ }	break;
 	default: break;
 	}
+}
+
+void UCEnemyFSM::SleepState()
+{
+	mState = EEnemyState::Sleep;
+	Anim->eAnimState = mState;
+
+	FVector dir = SearchEnemy();
+
+	if (dir.Size() < searchRange) { Anim->bIsDetect = true; }
 }
 
 void UCEnemyFSM::StartState()
@@ -173,20 +184,20 @@ void UCEnemyFSM::FlyState()
 		mFlyState = EFlyState::StartFly;
 		Anim->eFlyState = mFlyState;
 	}
+
 }
 
 // 브레스 사용 모션
 void UCEnemyFSM::BreathState()
 {
-	if(!Anim->bIsBreath) { return; }
-
+	if (!Anim->bIsBreath) { return; }
 
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
-	if (currentTime > fireSpawn){ 
-
-	enemy->AttackFire();
-	currentTime = 0.f;
+	if (currentTime > fireSpawn) 
+	{
+		enemy->AttackFire();
+		currentTime = 0.f;
 	}
 }
 
@@ -227,23 +238,21 @@ void UCEnemyFSM::FlyIdleState()
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
 
-	//공격 횟수 채우면 착륙으로 변경
-
-
-	if (attFlyCount >= MaxLandCount) {
-		mFlyState = EFlyState::FEndFly;
-		Anim->eFlyState = mFlyState;
-		
-		return;
-	}
-
-
-if (currentTime < idleDelayTime) { return; }
+// if (currentTime < idleDelayTime) { return; }
 
 	FVector dir = SearchEnemy();
 
 	if (dir.Size() < breathRange) {
 		OnAttackProcess();
+		return;
+	}
+
+	if (attFlyCount >= MaxLandCount)
+	{
+		mFlyState = EFlyState::FEndFly;
+		Anim->eFlyState = mFlyState;
+
+		attFlyCount = 0;
 		return;
 	}
 
@@ -271,27 +280,14 @@ void UCEnemyFSM::FMoveState()
 
 void UCEnemyFSM::FlyBreathState()
 {
-	//시간이 흐르다가 일정 시간 경과시
-	currentTime += GetWorld()->DeltaTimeSeconds;
-
-	//IdleState로 변경
-	if (currentTime > attackDelayTime) {
-		EndAttackProcess();
-		currentTime = 0.f;
-	}
+	Anim->bIsAttack = true;
 }
 
 
 
 void UCEnemyFSM::FlyAttack_1State()
 {
-	//시간이 흐르다가 일정 시간 경과시
-	currentTime += GetWorld()->DeltaTimeSeconds;
-
-	//IdleState로 변경
-	if (currentTime > attackDelayTime) {
-		EndAttackProcess();
-	}
+	Anim->bIsAttack = true;
 }
 
 // 착지 시점 / 착지 시작할 때를 다르게 해야 할 듯?
@@ -396,13 +392,17 @@ void UCEnemyFSM::OnAttackProcess()
 //IsFly 상태에 따라 다름.
 void UCEnemyFSM::EndAttackProcess()
 {
+	Anim->bIsAttack = false;
 
 	//비행일 경우
 	if (Anim->bIsFly == true){
 		//랜덤 돌려서 Breath, Attack_1 결정
 		++attFlyCount;
 
+		int saveRand = randomAttack;
 		randomAttack = FMath::RandRange(1, FlyTotalAttKinds);
+
+		while (saveRand == randomAttack) { randomAttack = FMath::RandRange(1, FlyTotalAttKinds); }
 
 		mFlyState = EFlyState::FlyIdle;
 		Anim->eFlyState = mFlyState;
@@ -441,6 +441,14 @@ FVector UCEnemyFSM::SearchEnemy()
 	return dir;
 }
 
+//죽었을 경우 사용하는 함수
+void UCEnemyFSM::ImDead()
+{
+	Anim->bIsDead = true;
+	mState = EEnemyState::Dead;
+	if (Anim) { Anim->eAnimState = mState; }
+}
+
 
 //==================== Notify 관련 함수들 ====================
 
@@ -458,4 +466,12 @@ void UCEnemyFSM::End_Opening()
 	mState = EEnemyState::Idle;
 	if(Anim){ Anim->eAnimState = mState; }
 }
+
+void UCEnemyFSM::Sleep_END()
+{
+	mState = EEnemyState::Start;
+	if (Anim) { Anim->eAnimState = mState; }
+}
+
+
 

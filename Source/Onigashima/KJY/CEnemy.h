@@ -32,12 +32,22 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FSM)
 	class UCEnemyFSM* FSM;
 
+	UPROPERTY()
+	class UCEnemyAnim* Anim;
+
 public:
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMeshComponent* EnemyComponent;
 	//UPROPERTY(EditDefaultsOnly)
 	//class UStaticMeshComponent* FirePosComp;
 
+	//시퀀스 시도중
+	 UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Death Sequence")
+	 class ULevelSequence* DeathSequence;
+
+
+public:	//시퀀스 재생 함수
+	void PlayDeathSequence();
 
 #pragma region CollisionSocketPart
 UPROPERTY(EditDefaultsOnly)
@@ -82,7 +92,10 @@ class UBoxComponent* Collision_15;
 
 
 	UPROPERTY(EditDefaultsOnly)
-	class UArrowComponent* ArrowComp;
+	class UArrowComponent* FireArrowComp;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UArrowComponent* AimedFireArrowComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FireFactory)
 	TSubclassOf<class ACFireBall> FireFactory;
@@ -95,25 +108,32 @@ class UBoxComponent* Collision_15;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Status)
 	int32 MaxHP = 20;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bullet)
-	int MaxBulletCnt = 40;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bullet)
-	TArray<class ACFireBall*> Maganine;
+	//시퀀스 테스트할 때 썼음.
+	bool bFortest = false;
 
-
+#pragma region Fail
+public: // 총알 오브젝트풀
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bullet)
+	// int MaxBulletCnt = 40;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bullet)
+	// TArray<class ACFireBall*> Magazine;
+	//float fireSpawn = 4.f;
+#pragma endregion Fail
 
 public:
-	//FBodyInstance* boneJaw;
-
 	float currentTime = 0.f;
 	float MaxFireTime = 1.f;
 	int MaxattackCount = 5;
 
+	//불 3발 소환시 발사되도록 할 예정.
+	int countAimedFire = 0;
+	int maxAimedFire = 3;
 
 public:
 	void AttackFire();
 	void AttackAimedFire();
 	void OnDamageEnemy(int32 _value);
+	void TestOnDamage();
 
 
 	//실질적 깡통... 나중을 위해 주석처리만 해둠
@@ -125,12 +145,12 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Attack_Notify")
 	void AttackEnd();
 */
-	
 
-public:
+
+
+public:	// 충돌처리
 	UFUNCTION()	
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 
 
 };
