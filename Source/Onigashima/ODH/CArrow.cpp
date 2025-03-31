@@ -35,8 +35,6 @@ ACArrow::ACArrow()
 void ACArrow::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	/*Velocity = GetActorForwardVector() * 2000;*/
 }
 
 // Called every frame
@@ -60,15 +58,20 @@ void ACArrow::Tick(float DeltaTime)
 
 		Velocity.Z += Gravity * DeltaTime;
 
+		FVector CurLocation = GetActorLocation();
+
+		FVector NextLocation = CurLocation + Velocity * DeltaTime;
+
+		SetActorLocation(NextLocation);
+
 		//새로 추가한 부분 이상하면 여기를 삭제하셈
-		FVector NextLocation = GetActorLocation() + Velocity * DeltaTime;
+		FVector Dir = NextLocation - CurLocation;
 
-		SetActorLocation(/*GetActorLocation() + Velocity * DeltaTime*/ NextLocation);
+		Dir.Normalize();
 
-		//FVector Dir = (NextLocation - GetActorLocation()).GetSafeNormal();
+		FRotator Rot = FRotationMatrix::MakeFromX(Dir).Rotator();
 
-		//FRotator Rot = FRotationMatrix::MakeFromX(Dir).Rotator();
-		//SetActorRotation(Rot);
+		SetActorRotation(Rot);
 	}
 }
 

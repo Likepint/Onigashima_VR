@@ -53,7 +53,7 @@ public:
 
 
 
-public:
+public:	//오브젝트 풀 관련 함수
 	void SetActivateFireBall(bool _bValue);
 
 public:

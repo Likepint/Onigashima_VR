@@ -8,11 +8,14 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "../PJS/Components/CBaseComponent.h"
+#include "CEnemy.h"
 
 // Sets default values
 ACAimedFireBall::ACAimedFireBall()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	
 	PrimaryActorTick.bCanEverTick = true;
 
 	AimedSphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
@@ -23,7 +26,7 @@ ACAimedFireBall::ACAimedFireBall()
 	AimedMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	AimedMeshComp->SetupAttachment(AimedSphereComp);
 
-	ConstructorHelpers::FObjectFinder<UStaticMesh> tmpMesh(TEXT("/Script/Engine.Material'/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> tmpMesh(TEXT("/Script/Engine.StaticMesh'/Engine/EditorMeshes/ArcadeEditorSphere.ArcadeEditorSphere'"));
 	if (tmpMesh.Succeeded())
 	{
 		AimedMeshComp->SetStaticMesh(tmpMesh.Object);
@@ -40,12 +43,17 @@ void ACAimedFireBall::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), AVRPlayer::StaticClass());
-	if (!actor) { return; }
+	AActor* pActor = UGameplayStatics::GetActorOfClass(GetWorld(), AVRPlayer::StaticClass());
+	if (!pActor) { return; }
 
-	Aimedplayer = Cast<AVRPlayer>(actor);	//AVRPlayer로 바꾸기
-	destination = Aimedplayer->GetActorLocation();
+	Aimedplayer = Cast<AVRPlayer>(pActor);	//AVRPlayer로 바꾸기
+
+
+	AActor* eActor = UGameplayStatics::GetActorOfClass(GetWorld(), ACEnemy::StaticClass());
+	if (!eActor) { return; }
+	enemy = Cast<ACEnemy>(eActor);
 	
+	maxFire = enemy->maxAimedFire;
 }
 
 // Called every frame
@@ -53,8 +61,19 @@ void ACAimedFireBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (Aimedplayer != nullptr) { dir = (destination - this->GetActorLocation()).GetSafeNormal(); }
-	else { dir = GetActorForwardVector(); }
+	if (enemy != nullptr && enemy->countAimedFire >= maxFire)
+	{ 
+		if (Aimedplayer != nullptr) { dir = (destination - this->GetActorLocation()).GetSafeNormal(); }
+		else { dir = GetActorForwardVector(); }
+	}
+
+	//발사 직전까지 조준하고 싶음
+	else 
+	{ 
+		dir = FVector(0); 
+		destination = Aimedplayer->GetActorLocation();
+	}
+
 
 
 	currentTime += DeltaTime;
@@ -64,7 +83,7 @@ void ACAimedFireBall::Tick(float DeltaTime)
 
 
 	if (currentTime > lifeSpan) { this->Destroy(); }
-	
+	if (destination.Size() <= 10) { this->Destroy(); }
 	
 }
 
@@ -75,8 +94,19 @@ void ACAimedFireBall::AimedOnOverlapBegin(class UPrimitiveComponent* OverlappedC
 
 	if (targetPlayer != nullptr)
 	{
-		targetPlayer->OnDamagePlayer(1); 	//플레이어 체력 감소 함수로 변경
-		this		->Destroy();
+		targetPlayer->OnDamagePlayer(1);
+		this->Destroy();
+
+		//SetActivateFireBall(false);
+	}
+
+
+	UCBaseComponent* targetBuildComp = Cast<UCBaseComponent>(OtherActor);
+	if (targetBuildComp != nullptr)
+	{
+		targetBuildComp->DestroyComponent();	//체력 감소로 변경.
+		this->Destroy();
+		//SetActivateFireBall(false);
 	}
 
 }

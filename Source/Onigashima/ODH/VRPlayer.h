@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Components/StaticMeshComponent.h"
 #include "CItem.h"
+#include "CAxe.h"
 #include "VRPlayer.generated.h"
 
 UENUM()
@@ -42,8 +43,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-private: //Camera
-	UPROPERTY(VisibleAnywhere)
+public: //Camera
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UCameraComponent* VRCam;
 
 private:
@@ -90,14 +91,14 @@ private:
 	void ItemCollisionOnOff(int32 ItemNum);
 
 	//Item Collision Overlap
-	UFUNCTION()
-	void SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+// 	UFUNCTION()
+// 	void SpearOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+// 
+// 	UFUNCTION()
+// 	void AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+// 
+// 	UFUNCTION()
+// 	void PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	//Left Hand Collision Overlap
 	UFUNCTION()
@@ -106,17 +107,20 @@ private:
 	UFUNCTION()
 	void LeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-private: //Hands
-	UPROPERTY(EditDefaultsOnly)
+public: //HandScene
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UMotionControllerComponent* LeftSceneComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UMotionControllerComponent* RightSceneComp;
+
+
+private: //Hands
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMeshComponent* LeftHandMesh;
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* LeftHandColli;
 
-
-	UPROPERTY(EditDefaultsOnly)
-	class UMotionControllerComponent* RightSceneComp;
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMeshComponent* RightHandMesh;
 
@@ -128,25 +132,48 @@ private: //Widget
 	class UWidget* ItemMenuWidget;
 
 private: //Item equipment
-	UPROPERTY(EditDefaultsOnly)
-	class UStaticMeshComponent* Spear;
-	UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* SpearColli;
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UStaticMeshComponent* Spear;
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UBoxComponent* SpearColli;
+// 
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UStaticMeshComponent* PickItem;
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UBoxComponent* PickColli;
+// 
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UStaticMeshComponent* Axe;
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UBoxComponent* AxeColli;
+// 	
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UStaticMeshComponent* Bow;
+// 	UPROPERTY(EditDefaultsOnly)
+// 	class UBoxComponent* BowColli;
 
-	UPROPERTY(EditDefaultsOnly)
-	class UStaticMeshComponent* PickItem;
-	UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* PickColli;
+	TArray<class ACItem*> ItemArray;
 
-	UPROPERTY(EditDefaultsOnly)
-	class UStaticMeshComponent* Axe;
-	UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* AxeColli;
-	
-	UPROPERTY(EditDefaultsOnly)
-	class UStaticMeshComponent* Bow;
-	UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* BowColli;
+	UPROPERTY(EditDefaultsOnly,Category=Items)
+	TSubclassOf<class ACAxe> CAxe;
+
+	UPROPERTY(EditDefaultsOnly,Category=Items)
+	TSubclassOf<class ACSpear> CSpear;
+
+	UPROPERTY(EditDefaultsOnly,Category=Items)
+	TSubclassOf<class ACBow> CBow;
+
+	UPROPERTY(EditDefaultsOnly,Category=Items)
+	TSubclassOf<class ACPick> CPick;
+
+	ACAxe* SpawnAxe;
+	ACSpear* SpawnSpear;
+	ACBow* SpawnBow;
+	ACPick* SpawnPick;
+
+	void GetAddress(ACItem* Item,int32 ItemNum);
+
+	void SetItems(TSubclassOf<class ACItem> ItemName, FVector SetPos, FRotator SetRot);
 
 	UPROPERTY(EditDefaultsOnly)
 	class UArrowComponent* ShootPos;
@@ -184,13 +211,17 @@ private: //Item equipment
 
 	void RightGrapAllCheck();
 
-	TArray<UStaticMeshComponent*> ItemArray;
+	/*TArray<UStaticMeshComponent*> ItemArray;*/
 
 	int32 ItemIndex = 0;
 
 	void TestItemPush();
 
 	void ItemVisibleAllFalse();
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	class USoundBase* ArrowSound;
 
 private: //Player Input
  	UPROPERTY(EditDefaultsOnly, Category = "Input")
