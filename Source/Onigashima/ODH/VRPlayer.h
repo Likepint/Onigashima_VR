@@ -28,6 +28,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UCBuildComponent* Build;
 
+	UPROPERTY(VisibleAnywhere)
+	class UCInventoryComponent* Inventory;
+
 public:
 	// Sets default values for this character's properties
 	AVRPlayer();
