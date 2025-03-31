@@ -21,17 +21,25 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	TSubclassOf<class UCUserWidget_CategorySlot> CategorySlot;
 
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TSet<TSubclassOf<class ACItemBase>> CraftedItems;
+
 protected:
 	virtual void NativePreConstruct() override;
 
 private:
 	void AddCategory();
+	void AddWrapBox();
 
 public:
 	void Refresh();
 
-protected:
+public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	EItemCategory Category = EItemCategory::MAX;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool IsCraftedCategory;
 
 };

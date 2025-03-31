@@ -16,11 +16,20 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, meta = (BindWidget))
 	class UTextBlock* QuantityText;
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, meta = (BindWidget))
+	class UButton* Button;
+
 protected:
 	virtual void NativePreConstruct() override;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	UFUNCTION()
+	void Clicked();
 	
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true))
-	class ACItemBase* Item;
+	TSubclassOf<class ACItemBase> Item;
 
 };

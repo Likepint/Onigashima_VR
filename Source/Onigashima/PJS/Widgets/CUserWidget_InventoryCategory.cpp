@@ -12,20 +12,47 @@ void UCUserWidget_InventoryCategory::NativePreConstruct()
 
 	CategoryTitle->SetText(FText::FromString(StaticEnum<EItemCategory>()->GetNameStringByValue(static_cast<int64>(Category))));
 
-	AddCategory();
+	CheckNull(GetOwningPlayerPawn());
+
+	if (IsCraftedCategory)
+	{
+		for (const auto& item : CraftedItems)
+		{
+			UCUserWidget_CategorySlot* category = CreateWidget<UCUserWidget_CategorySlot>(GetOwningPlayerPawn()->GetWorld(), CategorySlot);
+
+			category->Item = item;
+
+			CategoryContainer->AddChildToWrapBox(category);
+		}
+	}
+	else
+	{
+		UCInventoryComponent* inventory = CHelpers::GetComponent<UCInventoryComponent>(GetOwningPlayerPawn());
+		CheckNull(inventory);
+
+		for (const auto& item : inventory->GetInventory())
+		{
+			if (Category != item.Key->GetDefaultObject<ACItemBase>()->GetItemStruct().category or !CategorySlot)
+				continue;
+
+			UCUserWidget_CategorySlot* category = CreateWidget<UCUserWidget_CategorySlot>(GetOwningPlayerPawn()->GetWorld(), CategorySlot);
+
+			category->Item = item.Key;
+
+			CategoryContainer->AddChildToWrapBox(category);
+		}
+	}
 
 }
 
 void UCUserWidget_InventoryCategory::AddCategory()
 {
-	CheckNull(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	UCInventoryComponent* inventory = CHelpers::GetComponent<UCInventoryComponent>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	UCInventoryComponent* inventory = CHelpers::GetComponent<UCInventoryComponent>(GetOwningPlayerPawn());
 	CheckNull(inventory);
 
 	for (const auto& item : inventory->GetInventory())
 	{
-		if (Category != item.Key->GetItemStruct().category or !CategorySlot)
+		if (Category != item.Key->GetDefaultObject<ACItemBase>()->GetItemStruct().category or !CategorySlot)
 			continue;
 
 		UCUserWidget_CategorySlot* category = CreateWidget<UCUserWidget_CategorySlot>(GetOwningPlayerPawn()->GetWorld(), CategorySlot);
@@ -37,10 +64,56 @@ void UCUserWidget_InventoryCategory::AddCategory()
 
 }
 
+void UCUserWidget_InventoryCategory::AddWrapBox()
+{
+	for (const auto& item : CraftedItems)
+	{
+		UCUserWidget_CategorySlot* category = CreateWidget<UCUserWidget_CategorySlot>(GetOwningPlayerPawn()->GetWorld(), CategorySlot);
+
+		category->Item = item;
+
+		CategoryContainer->AddChildToWrapBox(category);
+	}
+
+}
+
 void UCUserWidget_InventoryCategory::Refresh()
 {
 	CategoryContainer->ClearChildren();
 
-	AddCategory();
+	//AddWrapBox();
+
+	//AddCategory();
+
+	if (IsCraftedCategory)
+	{
+		for (const auto& item : CraftedItems)
+		{
+			UCUserWidget_CategorySlot* category = CreateWidget<UCUserWidget_CategorySlot>(GetOwningPlayerPawn()->GetWorld(), CategorySlot);
+
+			category->Item = item;
+
+			CategoryContainer->AddChildToWrapBox(category);
+		}
+	}
+	else
+	{
+		UCInventoryComponent* inventory = CHelpers::GetComponent<UCInventoryComponent>(GetOwningPlayerPawn());
+		CheckNull(inventory);
+
+		for (const auto& item : inventory->GetInventory())
+		{
+			if (Category != item.Key->GetDefaultObject<ACItemBase>()->GetItemStruct().category or !CategorySlot)
+				continue;
+
+			if (CraftedItems.Find(item.Key) != nullptr) continue;
+
+			UCUserWidget_CategorySlot* category = CreateWidget<UCUserWidget_CategorySlot>(GetOwningPlayerPawn()->GetWorld(), CategorySlot);
+
+			category->Item = item.Key;
+
+			CategoryContainer->AddChildToWrapBox(category);
+		}
+	}
 
 }

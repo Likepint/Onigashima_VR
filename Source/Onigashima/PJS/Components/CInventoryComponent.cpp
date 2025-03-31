@@ -5,6 +5,7 @@
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
 #include "PJS/Widgets/CWidget_HUD.h"
+#include "PJS/Widgets/CUserWidget_Craft.h"
 #include "Camera/CameraComponent.h"
 #include "PJS/Crafts/CItemBase.h"
 
@@ -37,6 +38,8 @@ void UCInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 	CheckLookAt();
 
+	CLog::Print(bShowInventory);
+
 }
 
 void UCInventoryComponent::OnBindEnhancedInputSystem(UEnhancedInputComponent* InEnhancedInput)
@@ -48,16 +51,29 @@ void UCInventoryComponent::OnBindEnhancedInputSystem(UEnhancedInputComponent* In
 
 void UCInventoryComponent::Interact(const FInputActionValue& InVal)
 {
-	CheckNull(Target);
+	if (bShowInventory)
+	{
+		if (UCWidget_HUD* hud = Cast<UCWidget_HUD>(HUD))
+			hud->WBP_Craft->CraftItem();
+	}
+	else
+	{
+		CheckNull(Target);
 
-	Target->InteractWith(OwnerCharacter);
+		Target->InteractWith(OwnerCharacter);
+	}
 
 }
 
 void UCInventoryComponent::OnCraft(const FInputActionValue& InVal)
 {
-	if (UCWidget_HUD* hud = Cast< UCWidget_HUD>(HUD))
+	if (UCWidget_HUD* hud = Cast<UCWidget_HUD>(HUD))
+	{
+		bShowInventory = !bShowInventory;
+		
 		hud->ToggleCraftMenu();
+	}
+
 }
 
 void UCInventoryComponent::CheckLookAt()
@@ -89,7 +105,7 @@ void UCInventoryComponent::CheckLookAt()
 
 }
 
-bool UCInventoryComponent::AddToInventory(class ACItemBase* InItem, int32 Quantity)
+bool UCInventoryComponent::AddToInventory(TSubclassOf<class ACItemBase> InItem, int32 Quantity)
 {
 	if (Inventory.Find(InItem))
 		Inventory.Add(InItem, FMath::Clamp((*Inventory.Find(InItem) + Quantity), 0, 9999));
@@ -99,21 +115,24 @@ bool UCInventoryComponent::AddToInventory(class ACItemBase* InItem, int32 Quanti
 
 }
  
-FQueryResult UCInventoryComponent::QueryInventory(class ACItemBase* InItem, int32 Quantity)
+FQueryResult UCInventoryComponent::QueryInventory(TSubclassOf<class ACItemBase> InItem, int32 Quantity)
 {
 	FQueryResult result;
 
-	if (Inventory.Find(InItem) and Inventory[InItem] >= Quantity)
-		 result.bSuccess = true;
-	else result.bSuccess = false;
+	if (Quantity >= *Inventory.Find(InItem))
+	{
+		if (Inventory.Find(InItem) and Inventory[InItem] >= Quantity)
+			result.bSuccess = true;
+		else result.bSuccess = false;
 
-	result.Quantity = *Inventory.Find(InItem);
+		result.Quantity = *Inventory.Find(InItem);
+	}
 
 	return result;
 
 }
 
-bool UCInventoryComponent::RemoveFromInventory(class ACItemBase* InItem, int32 Quantity)
+bool UCInventoryComponent::RemoveFromInventory(TSubclassOf<class ACItemBase> InItem, int32 Quantity)
 {
 	FQueryResult result = QueryInventory(InItem, Quantity);
 

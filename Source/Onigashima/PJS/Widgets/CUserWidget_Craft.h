@@ -16,10 +16,25 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, meta = (BindWidget))
 	class UCUserWidget_InventoryCategory* Ammo;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, meta = (BindWidget))
-	class UCUserWidget_InventoryCategory* Turret;
+protected:
+	virtual void NativePreConstruct() override;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+public:
+	FORCEINLINE class UCUserWidget_CategorySlot* GetHoveredItem() { return HoveredItem; }
+	FORCEINLINE void SetHoveredItem(class UCUserWidget_CategorySlot* InItem) { HoveredItem = InItem; }
 
 public:
 	void RefreshInventory();
+
+	bool CheckRecipe(TMap<TSubclassOf<class ACItemBase>, int32> InItems);
+
+	void RemoveIngredients(TMap<TSubclassOf<class ACItemBase>, int32> InIngredients);
+
+	void CraftItem();
+
+private:
+	class UCUserWidget_CategorySlot* HoveredItem;
 
 };
