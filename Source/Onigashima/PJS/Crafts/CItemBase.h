@@ -8,7 +8,7 @@
 UENUM(BlueprintType)
 enum class EItemCategory : uint8
 {
-	Parts = 0, Ammo, Turret, MAX
+	Parts = 0, Ammo, MAX
 };
 
 USTRUCT()
@@ -31,6 +31,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UTexture2D* Thumbnail;
+
+	UPROPERTY(EditAnywhere)
+	TMap<TSubclassOf<class ACItemBase>, int32> Recipe;
 
 };
 

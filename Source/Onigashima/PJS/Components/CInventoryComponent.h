@@ -10,7 +10,7 @@ struct FQueryResult
 	GENERATED_BODY()
 
 public:
-	bool bSuccess;
+	bool bSuccess = false;
 
 	int32 Quantity;
 
@@ -51,25 +51,26 @@ private:
 public:
 	UUserWidget* GetHUD() { return HUD; }
 
-	TMap<class ACItemBase*, int32>& GetInventory() { return Inventory; };
+	TMap<TSubclassOf<class ACItemBase>, int32>& GetInventory() { return Inventory; };
 
 private:
 	void CheckLookAt();
 
 public:
-	bool AddToInventory(class ACItemBase* InItem, int32 Quantity);
-
-private:
-	FQueryResult QueryInventory(class ACItemBase* InItem, int32 Quantity);
-	bool RemoveFromInventory(class ACItemBase* InItem, int32 Quantity);
+	bool AddToInventory(TSubclassOf<class ACItemBase> InItem, int32 Quantity);
+	FQueryResult QueryInventory(TSubclassOf<class ACItemBase> InItem, int32 Quantity);
+	bool RemoveFromInventory(TSubclassOf<class ACItemBase> InItem, int32 Quantity);
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	TMap<class ACItemBase*, int32> Inventory;
+	TMap<TSubclassOf<class ACItemBase>, int32> Inventory;
 
 private:
 	class ACItemBase* Target;
 
 	class UUserWidget* HUD;
+
+private:
+	bool bShowInventory = false;
 
 };
