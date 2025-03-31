@@ -3,6 +3,7 @@
 
 #include "CPick.h"
 #include "Components/BoxComponent.h"
+#include "../../../../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h"
 
 // Sets default values
 ACPick::ACPick()
@@ -27,6 +28,11 @@ ACPick::ACPick()
 		MeshComp->SetStaticMesh(Temp_Pick.Object);
 		MeshComp->SetRelativeLocation(FVector(0, -119.0, -6.0));
 	}
+
+	StoneEffect = CreateDefaultSubobject<UNiagaraComponent>(L"ChopEffect");
+	StoneEffect->SetupAttachment(RootComponent);
+	StoneEffect->SetAutoActivate(false);
+
 	ItemNum=4;
 }
 
@@ -50,5 +56,7 @@ void ACPick::SetCollision(bool bValue)
 void ACPick::PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	GEngine->AddOnScreenDebugMessage(3, 2.0f, FColor::Cyan, TEXT("Pick Overlap!"));
+
+	StoneEffect->Activate(true);
 }
 

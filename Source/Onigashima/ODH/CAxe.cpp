@@ -57,14 +57,14 @@ void ACAxe::AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherAc
 {
 	GEngine->AddOnScreenDebugMessage(3, 2.0f, FColor::Blue, TEXT("Axe Overlap!"));
 
-	FVector HitLocation = SweepResult.Location;
-	FVector HitDirection = SweepResult.ImpactNormal;
-
-	FVector AxeDir = -HitDirection;
-
-
-
-	FVector dir = HitLocation - CollisionComp->GetComponentLocation();
+// 	FVector HitLocation = SweepResult.Location;
+// 	FVector HitDirection = SweepResult.ImpactNormal;
+// 
+// 	FVector AxeDir = -HitDirection;
+// 
+// 
+// 
+// 	FVector dir = HitLocation - CollisionComp->GetComponentLocation();
 
 	/*ChopEffect->SetVectorParameter("Direction",HitDirection);*/
 

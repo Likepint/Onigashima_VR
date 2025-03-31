@@ -27,6 +27,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* MeshComp;
 
+	UPROPERTY(EditDefaultsOnly)
+	class UNiagaraComponent* StoneEffect;
+
 	UFUNCTION()
 	void PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };
