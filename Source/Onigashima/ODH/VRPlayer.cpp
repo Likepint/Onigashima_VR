@@ -5,6 +5,7 @@
 #include "Global.h"
 #include "Camera/CameraComponent.h"
 #include "PJS/Components/CBuildComponent.h"
+#include "PJS/Components/CInventoryComponent.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputMappingContext.h"
@@ -34,6 +35,7 @@ AVRPlayer::AVRPlayer()
     VRCam->bUsePawnControlRotation = true;
 
     CHelpers::CreateActorComponent<UCBuildComponent>(this, &Build, "Build");
+    CHelpers::CreateActorComponent<UCInventoryComponent >(this, &Inventory  , "Inventory");
 
 
     //Input Setting
