@@ -89,4 +89,6 @@ public:	// AnimNotify 관련
 
 	UFUNCTION()
 	void AnimNotify_Sleep_END();
+	UFUNCTION()
+	void AnimNotify_Select_ATT();
 };

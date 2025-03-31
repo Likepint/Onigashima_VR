@@ -20,6 +20,8 @@
 #include "LevelSequenceActor.h"
 #include "MovieSceneSequencePlaybackSettings.h"
 #include "../ODH/CArrow.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 
 
 
@@ -29,6 +31,7 @@ ACEnemy::ACEnemy()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+#pragma region Mesh
 
 	EnemyComponent = GetMesh();
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>TmpBody(TEXT("/Script/Engine.SkeletalMesh'/Game/KJY/_Dragon8/Mesh/SK_Dragon8.SK_Dragon8'"));
@@ -53,7 +56,7 @@ ACEnemy::ACEnemy()
 	AimedFireArrowComp->SetupAttachment(EnemyComponent, TEXT("FirePosition"));
 	AimedFireArrowComp->SetRelativeLocation(FVector(200, 200, 0));
 	AimedFireArrowComp->SetRelativeRotation(FRotator(0, 80, 0));
-
+#pragma endregion Mesh
 
 #pragma region CollisionSocketPart
 	//================== 소켓 붙이는 파트
@@ -129,16 +132,8 @@ ACEnemy::ACEnemy()
 	Collision_7->SetRelativeLocation(FVector(20.f, 0.f, 0.f));
 #pragma endregion
 
-
-
+#pragma region FSM
 	FSM = CreateDefaultSubobject<UCEnemyFSM>(TEXT("FSM"));
-
-
-	ConstructorHelpers::FClassFinder<UAnimInstance>tmpAnim(TEXT("LevelSequence'/Game/KJY/Level/Sequence/Dragon_Dead_SQ/Dragon_Dead_SQRoot.Dragon_Dead_SQRoot'"));
-
-	if (tmpAnim.Succeeded()) {
-		EnemyComponent->SetAnimInstanceClass(tmpAnim.Class);
-	}
 
 	USkeletalMeshComponent* SkeletalMeshComp = GetMesh();
 	if (SkeletalMeshComp)
@@ -149,14 +144,33 @@ ACEnemy::ACEnemy()
 		SkeletalMeshComp->SetCollisionResponseToAllChannels(ECR_Block);
 	}
 		SkeletalMeshComp->OnComponentBeginOverlap.AddDynamic(this, &ACEnemy::OnOverlapBegin);
+#pragma endregion 
 
 
-		static ConstructorHelpers::FObjectFinder<ULevelSequence> DeathSeqAsset(TEXT("LevelSequence'/Game/KJY/Level/Sequence/Dragon_Dead_SQ/Dragon_Dead_SQRoot.Dragon_Dead_SQRoot'"));
+
+		ConstructorHelpers::FClassFinder<UAnimInstance>tmpAnim(TEXT("LevelSequence'/Game/KJY/Level/Sequence/SQ_Dragon_death.SQ_Dragon_death'"));
+
+		if (tmpAnim.Succeeded()) { EnemyComponent->SetAnimInstanceClass(tmpAnim.Class); }
+		/// Script / LevelSequence.LevelSequence'/Game/KJY/Level/Sequence/SQ_Dragon_death.SQ_Dragon_death'
+
+		static ConstructorHelpers::FObjectFinder<ULevelSequence> DeathSeqAsset(TEXT("LevelSequence'/Game/KJY/Level/Sequence/SQ_Dragon_death.SQ_Dragon_death'"));
 
 		if (DeathSeqAsset.Succeeded())
 		{
 			DeathSequence = DeathSeqAsset.Object;
 		}
+
+		//카메라 추가해서 해보려고 시도했는데 별로임
+	//	USpringArmComponent* SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	//	SpringArm->SetupAttachment(RootComponent);  
+	//	SpringArm->TargetArmLength = 300.f;         
+	//	SpringArm->bEnableCameraRotationLag = true; 
+	//	SpringArm->CameraRotationLagSpeed = 10.f;   
+	//	SpringArm->bDoCollisionTest = false;        
+	//
+	//
+	//	UCameraComponent* Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Enemy Camera"));
+	//	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Spring Arm에 카메라 부착
 
 }
 
@@ -168,13 +182,13 @@ void ACEnemy::BeginPlay()
 	HP = MaxHP;
 
 
-	//  UWorld* world = GetWorld();
-	//  if (DeathSequence != nullptr && world != nullptr)
-	//  {
-	//  	ALevelSequenceActor* OutActor = nullptr;
-	//  	ULevelSequencePlayer::CreateLevelSequencePlayer(world, DeathSequence, FMovieSceneSequencePlaybackSettings(), // // utActor);
-	//  
-	//  }
+	  UWorld* world = GetWorld();
+	  if (DeathSequence != nullptr && world != nullptr)
+	  {
+	  	ALevelSequenceActor* OutActor = nullptr;
+	  	ULevelSequencePlayer::CreateLevelSequencePlayer(world, DeathSequence, FMovieSceneSequencePlaybackSettings(), OutActor);
+	  
+	  }
 
 
 
@@ -205,25 +219,14 @@ void ACEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// currentTime += DeltaTime;
-	// 
+	//  currentTime += DeltaTime;
+	//  
 	//  if (currentTime >= 2.f && bFortest == false)
 	//  {
 	//  	bFortest = true;
 	//  	PlayDeathSequence();
 	//  }
 
-	// if (!Anim->bIsBreath){ return; }
-	// 
-	// currentTime += DeltaTime;
-	// 
-	// if (currentTime > fireSpawn) 
-	// {
-	// 	AttackFire();
-	// 	currentTime = 0.f;
-	// }
-	// 
-	// else{ AttackFire(); }
 }
 
 // Called to bind functionality to input
@@ -243,6 +246,9 @@ void ACEnemy::AttackFire()
    
 	FTransform FirePos = FireArrowComp->GetComponentTransform();
 	GetWorld()->SpawnActor<ACFireBall>(FireFactory, FirePos, spawnParams);
+
+
+	++countAimedFire;
 	/*
 	   bool FindResult = false;
 
@@ -269,7 +275,7 @@ void ACEnemy::AttackFire()
 	
 	*/
 	
-	++countAimedFire;
+
 }
 
 
@@ -282,6 +288,7 @@ void ACEnemy::AttackAimedFire()
 
 	FTransform FirePos = AimedFireArrowComp->GetComponentTransform();
 	GetWorld()->SpawnActor<ACAimedFireBall>(AimedFireFactory, FirePos, spawnParams);
+
 
 }
 

@@ -10,6 +10,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "../PJS/Components/CBaseComponent.h"
 #include "CEnemy.h"
+#include "Components/SceneComponent.h"
+#include "../../../../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h"
+#include "CFireSkill.h"
 
 // Sets default values
 ACAimedFireBall::ACAimedFireBall()
@@ -17,6 +20,30 @@ ACAimedFireBall::ACAimedFireBall()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	
 	PrimaryActorTick.bCanEverTick = true;
+
+	//VFX 고치면 주석처리 고대로 살리면 됨2
+	/*
+	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("AimedSceneComp"));
+	RootComponent = SceneRoot;
+
+	AimedFireBallEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("AimedFireBallNiagara"));
+	AimedFireBallEffect->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("/Game/KJY/EnergyBallVFX/Niagara/NS_AimedFireBall.NS_AimedFireBall"));
+	if (NiagaraAsset.Succeeded())
+	{
+		AimedFireBallEffect->SetAsset(NiagaraAsset.Object);
+	}
+
+
+	AimedSphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("AimedSphereComp"));
+	AimedSphereComp->SetupAttachment(SceneRoot);
+	AimedSphereComp->SetSphereRadius(100.f);
+	AimedSphereComp->SetRelativeScale3D(FVector(0.6f));
+
+
+	AimedSphereComp->OnComponentBeginOverlap.AddDynamic(this, &ACAimedFireBall::AimedOnOverlapBegin);
+	*/
 
 	AimedSphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	RootComponent = AimedSphereComp;
@@ -34,8 +61,6 @@ ACAimedFireBall::ACAimedFireBall()
 
 
 	AimedSphereComp->OnComponentBeginOverlap.AddDynamic(this, &ACAimedFireBall::AimedOnOverlapBegin);
-
-
 }
 
 // Called when the game starts or when spawned
@@ -105,9 +130,14 @@ void ACAimedFireBall::AimedOnOverlapBegin(class UPrimitiveComponent* OverlappedC
 	if (targetBuildComp != nullptr)
 	{
 		targetBuildComp->DestroyComponent();	//체력 감소로 변경.
-		this->Destroy();
 		//SetActivateFireBall(false);
+		this->Destroy();
 	}
 
+	ACFireSkill* checkSelf = Cast<ACFireSkill>(OtherActor);
+	if (checkSelf != OtherActor)
+	{
+		
+	}
 }
 

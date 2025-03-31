@@ -10,6 +10,8 @@
 #include "CEnemy.h"
 #include "../ODH/VRPlayer.h"
 #include "../PJS/Components/CBaseComponent.h"
+#include "Components/SceneComponent.h"
+#include "../../../../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h"
 
 // Sets default values
 ACFireBall::ACFireBall()
@@ -17,30 +19,57 @@ ACFireBall::ACFireBall()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//VFX 고치면 주석처리 고대로 살리면 됨
+	/*
+	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComp"));
+	RootComponent = SceneRoot;
+
+	FireBallEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FireBallNiagara"));
+	FireBallEffect->SetupAttachment(RootComponent);
+
+	
+	 static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("/Game/KJY/EnergyBallVFX/Niagara/NS_FireBall.NS_FireBall"));
+	 if (NiagaraAsset.Succeeded())
+	 {
+	 	FireBallEffect->SetAsset(NiagaraAsset.Object);
+	 }
+
+	
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	SphereComp->SetupAttachment(SceneRoot);
+	SphereComp->SetSphereRadius(100.f);
+	SphereComp->SetRelativeScale3D(FVector(0.6f));
+
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ACFireBall::OnOverlapBegin);
+     */
+
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	RootComponent = SphereComp;
 	SphereComp->SetSphereRadius(100.f);
 	SphereComp->SetRelativeScale3D(FVector(0.6f));
 
-	
+
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetupAttachment(SphereComp);
-	
+
 	ConstructorHelpers::FObjectFinder<UStaticMesh> tmpMesh(TEXT("/Script/Engine.StaticMesh'/Engine/EditorMeshes/ArcadeEditorSphere.ArcadeEditorSphere'"));
 	if (tmpMesh.Succeeded())
 	{
 		MeshComp->SetStaticMesh(tmpMesh.Object);
 	}
-	
+
 
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ACFireBall::OnOverlapBegin);
-     
+
 }
 
 // Called when the game starts or when spawned
 void ACFireBall::BeginPlay()
 {
 	Super::BeginPlay();
+
+
+	if (FireBallEffect){ FireBallEffect->Activate(true); }
 	
 	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), AVRPlayer::StaticClass());
 	if (!actor) { return; }
@@ -76,32 +105,14 @@ void ACFireBall::Tick(float DeltaTime)
 
 
 
-void ACFireBall::SetActivateFireBall(bool _bValue)
-{
-	MeshComp->SetVisibility(_bValue);
-
-	if (_bValue) { 
-		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); 
-		//currentTime = 0.f;
-	}
-
-	else { 
-		MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
-		//currentTime = 0.f;
-	}
-}
-
-
-
 void ACFireBall::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AVRPlayer* targetPlayer = Cast<AVRPlayer>(OtherActor);
 	if (targetPlayer != nullptr)
 	{
 		targetPlayer->OnDamagePlayer(1);
-		this		->Destroy();
-
 		//SetActivateFireBall(false);
+		this->Destroy();
 	}
 
 
@@ -109,10 +120,14 @@ void ACFireBall::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class
 	if (targetBuildComp != nullptr)
 	{
 		targetBuildComp->DestroyComponent();	//체력 감소로 변경.
-		this			->Destroy();
 		//SetActivateFireBall(false);
+		this->Destroy();
 	}
 
-
+	// ACFireBall* checkSelf = Cast<ACFireBall>(OtherActor);
+	// if (checkSelf != OtherActor)
+	// {
+	// 	this->Destroy();
+	// }
 
 }
