@@ -43,8 +43,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-private: //Camera
-	UPROPERTY(VisibleAnywhere)
+public: //Camera
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UCameraComponent* VRCam;
 
 private:
@@ -107,17 +107,20 @@ private:
 	UFUNCTION()
 	void LeftHandEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-private: //Hands
-	UPROPERTY(EditDefaultsOnly)
+public: //HandScene
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UMotionControllerComponent* LeftSceneComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UMotionControllerComponent* RightSceneComp;
+
+
+private: //Hands
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMeshComponent* LeftHandMesh;
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* LeftHandColli;
 
-
-	UPROPERTY(EditDefaultsOnly)
-	class UMotionControllerComponent* RightSceneComp;
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMeshComponent* RightHandMesh;
 
@@ -215,6 +218,10 @@ private: //Item equipment
 	void TestItemPush();
 
 	void ItemVisibleAllFalse();
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	class USoundBase* ArrowSound;
 
 private: //Player Input
  	UPROPERTY(EditDefaultsOnly, Category = "Input")

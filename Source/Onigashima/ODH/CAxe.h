@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "CItem.h"
+#include "Sound/SoundCue.h"
 #include "CAxe.generated.h"
 
 UCLASS()
@@ -29,6 +30,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UNiagaraComponent* ChopEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	class USoundCue* AxeSound;
 
 	UFUNCTION()
 	void AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

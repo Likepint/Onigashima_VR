@@ -4,6 +4,7 @@
 #include "CPick.h"
 #include "Components/BoxComponent.h"
 #include "../../../../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACPick::ACPick()
@@ -56,6 +57,8 @@ void ACPick::SetCollision(bool bValue)
 void ACPick::PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	GEngine->AddOnScreenDebugMessage(3, 2.0f, FColor::Cyan, TEXT("Pick Overlap!"));
+
+	UGameplayStatics::PlaySoundAtLocation(this, PickSound, GetActorLocation());
 
 	StoneEffect->Activate(true);
 }

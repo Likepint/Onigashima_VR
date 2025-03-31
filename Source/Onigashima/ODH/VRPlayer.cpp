@@ -156,78 +156,6 @@ AVRPlayer::AVRPlayer()
         RightHandMesh->SetSkeletalMesh(Temp_RightHand.Object);
         RightHandMesh->SetRelativeRotation(FRotator(0, -90, 0));
     }
-
-    //Items
-//     Spear = CreateDefaultSubobject<UStaticMeshComponent>(L"SpearComp");
-//     Spear->SetupAttachment(RightHandMesh, L"hand_rSocket");
-//     ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Spear(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Spear/Old_Wooden_Pole_ueqfdi0ga_Low.Old_Wooden_Pole_ueqfdi0ga_Low'");
-//     if (Temp_Spear.Succeeded())
-//     {
-//         Spear->SetStaticMesh(Temp_Spear.Object);
-//         Spear->SetRelativeScale3D(FVector(0.2f));
-//         Spear->SetRelativeLocationAndRotation(FVector(-29, 0, 0), FRotator(0, 0, 90));
-//         
-//         SpearColli = CreateDefaultSubobject<UBoxComponent>(L"SpearCollision");
-//         SpearColli->SetupAttachment(Spear);
-//         SpearColli->SetCollisionProfileName(L"Items");
-//         SpearColli->SetRelativeLocation(FVector(0, 160, 5));
-//         SpearColli->SetBoxExtent(FVector(8.156206f, 77.76204f, 7.885468f));
-//         SpearColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::SpearOverlap);
-//     }
-// 
-//     PickItem = CreateDefaultSubobject<UStaticMeshComponent>(L"PickComp");
-//     PickItem->SetupAttachment(RightHandMesh, L"hand_rSocket");
-//     ConstructorHelpers::FObjectFinder<UStaticMesh>Temp_Pick(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Pick/pickaxe.pickaxe'");
-//     if (Temp_Pick.Succeeded())
-//     {
-//         PickItem->SetStaticMesh(Temp_Pick.Object);
-//         PickItem->SetRelativeLocationAndRotation(FVector(0,0, 8.965752f),FRotator(0, 0, 85));
-//         PickItem->SetRelativeScale3D(FVector(0.1775f));
-// 
-//         PickColli =CreateDefaultSubobject<UBoxComponent>(L"PickCollision");
-//         PickColli->SetCollisionProfileName(L"Items");
-//         PickColli->SetupAttachment(PickItem);
-//         PickColli->SetRelativeLocation(FVector(0, 93.617023, 7));
-//         PickColli->SetBoxExtent(FVector(17.624384f, 117.007257f, 25.261781f));
-//         PickColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::PickOverlap);
-//     }
-// 
-//     Axe = CreateDefaultSubobject<UStaticMeshComponent>(L"AxeComp");
-//     Axe->SetupAttachment(RightHandMesh, L"hand_rSocket");
-//     ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Axe(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Axe/Medium/ueqgcaifa_tier_2.ueqgcaifa_tier_2'");
-//     if (Temp_Axe.Succeeded())
-//     {
-//         Axe->SetStaticMesh(Temp_Axe.Object);
-//         Axe->SetRelativeLocationAndRotation(FVector(-10, 0, 0), FRotator(90, 0, 180));
-// 
-// 		AxeColli = CreateDefaultSubobject<UBoxComponent>(L"AxeCollision");
-//         AxeColli->SetCollisionProfileName(L"Items");
-// 		AxeColli->SetupAttachment(Axe);
-// 		AxeColli->SetRelativeLocationAndRotation(FVector(17, 4.838387f, 2.258435f), FRotator(0, 180, 90));
-// 		AxeColli->SetBoxExtent(FVector(5.524121f, 1.973751f, 7.189121f));
-//         AxeColli->OnComponentBeginOverlap.AddDynamic(this, &AVRPlayer::AxeOverlap);
-//     }
-// 
-//     Bow = CreateDefaultSubobject<UStaticMeshComponent>(L"BowComp");
-//     Bow->SetupAttachment(RightHandMesh, L"hand_rSocket");
-//     ConstructorHelpers::FObjectFinder<UStaticMesh> Temp_Bow(L"/Script/Engine.StaticMesh'/Game/ODH/ItemAsset/Bow/cool_bow.cool_bow'");
-//     if (Temp_Bow.Succeeded())
-//     {
-//         Bow->SetStaticMesh(Temp_Bow.Object);
-//         Bow->SetRelativeLocationAndRotation(FVector(0, -0.784402f, 8.965752f),FRotator(0,0,85));
-//         Bow->SetRelativeScale3D(FVector(0.1775f));
-// 
-//         ShootPos = CreateDefaultSubobject<UArrowComponent>(L"ShootPos");
-//         ShootPos->SetupAttachment(Bow);
-//         ShootPos->SetRelativeLocationAndRotation(FVector(0, 33.802818f,0),FRotator(0,90,0));
-// 
-//         BowColli=CreateDefaultSubobject<UBoxComponent>(L"BowStringCollision");
-//         BowColli->SetCollisionProfileName(L"BowString");
-//         BowColli->SetupAttachment(Bow);
-//         BowColli->SetRelativeLocation(FVector(0, -33.802818f, 2));
-//         BowColli->SetBoxExtent(FVector(60.520447f, 4.949969f, 5.551495f));
-//     }
-#pragma endregion
 }
 
 // Called when the game starts or when spawned
@@ -320,6 +248,8 @@ void AVRPlayer::Tick(float DeltaTime)
     if (bFindArrow && !bLeftTrigger || bFindArrow && !bLeftGrap)
     {
         bFindArrow = false;
+
+        UGameplayStatics::PlaySoundAtLocation(this, ArrowSound, GetActorLocation());
 
         ArrowPool[ArrowIndex]->DetachRootComponentFromParent(true);
 

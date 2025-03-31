@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "CItem.h"
+#include "Sound/SoundCue.h"
 #include "CPick.generated.h"
 
 UCLASS()
@@ -29,6 +30,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UNiagaraComponent* StoneEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* PickSound;
 
 	UFUNCTION()
 	void PickOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
