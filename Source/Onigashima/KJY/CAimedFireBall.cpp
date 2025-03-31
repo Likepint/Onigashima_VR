@@ -22,7 +22,7 @@ ACAimedFireBall::ACAimedFireBall()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//VFX 고치면 주석처리 고대로 살리면 됨2
-	/*
+	
 	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("AimedSceneComp"));
 	RootComponent = SceneRoot;
 
@@ -42,9 +42,7 @@ ACAimedFireBall::ACAimedFireBall()
 	AimedSphereComp->SetRelativeScale3D(FVector(0.6f));
 
 
-	AimedSphereComp->OnComponentBeginOverlap.AddDynamic(this, &ACAimedFireBall::AimedOnOverlapBegin);
-	*/
-
+	/*
 	AimedSphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	RootComponent = AimedSphereComp;
 	AimedSphereComp->SetSphereRadius(100.f);
@@ -58,7 +56,7 @@ ACAimedFireBall::ACAimedFireBall()
 	{
 		AimedMeshComp->SetStaticMesh(tmpMesh.Object);
 	}
-
+	*/
 
 	AimedSphereComp->OnComponentBeginOverlap.AddDynamic(this, &ACAimedFireBall::AimedOnOverlapBegin);
 }
