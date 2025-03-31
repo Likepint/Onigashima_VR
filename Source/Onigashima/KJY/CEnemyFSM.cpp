@@ -19,7 +19,7 @@ UCEnemyFSM::UCEnemyFSM()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+	PrimaryComponentTick.bTickEvenWhenPaused = true;
 	// ...
 }
 
@@ -30,15 +30,14 @@ void UCEnemyFSM::BeginPlay()
 	Super::BeginPlay();
 
 	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), AVRPlayer::StaticClass());
-
 	if (!actor) { return; }
+
 	target = Cast<AVRPlayer>(actor);
 
 	enemy = Cast< ACEnemy>(GetOwner());
-
 	if (!enemy) { return; }
-	Anim = Cast<UCEnemyAnim>(enemy->GetMesh()->GetAnimInstance());
 
+	Anim = Cast<UCEnemyAnim>(enemy->GetMesh()->GetAnimInstance());
 
 	// 혹시 모를 초기화
 	randomAttack = FMath::RandRange(1, TotalAttKinds);
@@ -56,6 +55,7 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	// ...
 	//상태 체크
 
+	//TargetRotation();
 
 #pragma region LogMessageState
 	FString logMsgState = UEnum::GetValueAsString(mState);
@@ -97,7 +97,7 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	case EFlyState::FlyIdle			: { FlyIdleState();		}	break;
 	case EFlyState::FMove			: { FMoveState();		}	break;
 
-	case EFlyState::FBreath			: { FlyBreathState(); }	break;
+	case EFlyState::FBreath			: { BreathState(); }	break;
 	case EFlyState::FAttack_1		: { FlyAttack_1State(); }	break;
 	case EFlyState::FEndFly			: { /*EndFlyState();*/ }	break;
 	default: break;
@@ -107,6 +107,7 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 void UCEnemyFSM::SleepState()
 {
 	mState = EEnemyState::Sleep;
+	if(Anim == nullptr) { return; }
 	Anim->eAnimState = mState;
 
 	FVector dir = SearchEnemy();
@@ -179,17 +180,29 @@ void UCEnemyFSM::MoveState()
 
 void UCEnemyFSM::FlyState()
 {
+	 Anim->bIsFly = true;
+
 	if (Anim->bIsStartFly == true)
 	{
 		mFlyState = EFlyState::StartFly;
 		Anim->eFlyState = mFlyState;
 	}
 
+	else
+	{
+		mState = EEnemyState::FlyAtt;
+		Anim->eAnimState = mState;
+
+		mFlyState = EFlyState::FBreath;
+		Anim->eFlyState = mFlyState;
+	}
 }
 
 // 브레스 사용 모션
 void UCEnemyFSM::BreathState()
 {
+	TargetRotation();
+
 	if (!Anim->bIsBreath) { return; }
 
 	currentTime += GetWorld()->DeltaTimeSeconds;
@@ -232,27 +245,30 @@ void UCEnemyFSM::StartFlyState()
 
 void UCEnemyFSM::FlyIdleState()
 {
-	UE_LOG(LogTemp, Warning, TEXT("111111111111"));
+
+	Anim->bIsFly = true;
 
 	//적 탐지 프로세스
 	currentTime += GetWorld()->DeltaTimeSeconds;
 
 
-// if (currentTime < idleDelayTime) { return; }
+
+
+	if (attFlyCount >= MaxLandCount)
+	{
+		mFlyState = EFlyState::FAttack_1;
+		Anim->eFlyState = mFlyState;
+
+		attFlyCount = 0;
+		return;
+	}
+
+	 if (currentTime < idleDelayTime) { return; }
 
 	FVector dir = SearchEnemy();
 
 	if (dir.Size() < breathRange) {
 		OnAttackProcess();
-		return;
-	}
-
-	if (attFlyCount >= MaxLandCount)
-	{
-		mFlyState = EFlyState::FEndFly;
-		Anim->eFlyState = mFlyState;
-
-		attFlyCount = 0;
 		return;
 	}
 
@@ -281,6 +297,8 @@ void UCEnemyFSM::FMoveState()
 void UCEnemyFSM::FlyBreathState()
 {
 	Anim->bIsAttack = true;
+	TargetRotation();
+
 }
 
 
@@ -288,6 +306,8 @@ void UCEnemyFSM::FlyBreathState()
 void UCEnemyFSM::FlyAttack_1State()
 {
 	Anim->bIsAttack = true;
+	TargetRotation();
+	//Anim->bIsFly = false;
 }
 
 // 착지 시점 / 착지 시작할 때를 다르게 해야 할 듯?
@@ -300,6 +320,7 @@ void UCEnemyFSM::EndFlyState()
 	Anim->eAnimState = mState;
 
 	Anim->bIsFly = false;
+	Anim->bIsStartFly = false;
 }
 
 //==============================================
@@ -315,10 +336,14 @@ void UCEnemyFSM::DeadState()
 //타겟 방향으로 로테이션
 void UCEnemyFSM::TargetRotation()
 {
+	float DeltaTime = GetWorld()->DeltaTimeSeconds;
 	FVector dir = SearchEnemy();
 
 	FRotator TargetRotation = dir.Rotation();
-	FRotator NewRotation	= enemy->GetActorRotation();
+	FRotator CurrentRotation = enemy->GetActorRotation();
+
+	FRotator NewRotation = FMath::RInterpTo( CurrentRotation, TargetRotation, DeltaTime, 1.0f );
+
 
 	NewRotation.Yaw = TargetRotation.Yaw;
 	enemy->SetActorRotation(NewRotation);

@@ -47,6 +47,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	class UStaticMeshComponent* MeshComp;
 
+	UPROPERTY(VisibleAnywhere, Category = Movement)
+	class USceneComponent* SceneRoot;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+    class UNiagaraComponent* FireBallEffect;
+
 	float speed = 1000.f;
 
 	FVector destination;
@@ -54,7 +60,7 @@ public:
 
 
 public:	//오브젝트 풀 관련 함수
-	void SetActivateFireBall(bool _bValue);
+	//void SetActivateFireBall(bool _bValue);
 
 public:
 	UFUNCTION()

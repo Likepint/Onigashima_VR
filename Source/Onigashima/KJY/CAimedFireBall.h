@@ -52,6 +52,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = AimedMovement)
 	class UStaticMeshComponent* AimedMeshComp;
 
+	UPROPERTY(VisibleAnywhere, Category = Movement)
+	class USceneComponent* SceneRoot;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+    class UNiagaraComponent* AimedFireBallEffect;
+
 	FVector dir;
 	FVector dir2;
 	FVector Pos;

@@ -87,7 +87,7 @@ private: // 시간 관련 변수
 	float attackDelayTime = 2.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
-	float fireSpawn = 0.05f;
+	float fireSpawn = 0.15f;
 
 	UPROPERTY(EditDefaultsOnly, Category = FSM)
 	float currentTime = 0.f;

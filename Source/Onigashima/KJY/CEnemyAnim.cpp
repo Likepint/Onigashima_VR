@@ -41,15 +41,22 @@ void UCEnemyAnim::AnimNotify_ATT1_END()
 	if (FSM) { FSM->EndAttackProcess(); }
 }
 
+
+void UCEnemyAnim::AnimNotify_Breath_Start()
+{
+	bIsBreath = true;
+}
 void UCEnemyAnim::AnimNotify_Breath_END()
 {
 	if (FSM) { FSM->EndAttackProcess();  }
 	bIsBreath = false;
 }
 
+
+
+
 void UCEnemyAnim::AnimNotify_FBreath_END()
 {
-	if (FSM) { FSM ->EndAttackProcess(); }
 	bIsBreath = false;
 }
 
@@ -72,10 +79,7 @@ void UCEnemyAnim::AnimNotify_AttackEnd()
 	if (FSM){ FSM ->EndAttackProcess(); }
 }
 
-void UCEnemyAnim::AnimNotify_Breath_Start()
-{
-	bIsBreath = true;
-}
+
 
 void UCEnemyAnim::AnimNotify_End_Opening()
 {
@@ -96,5 +100,10 @@ void UCEnemyAnim::AnimNotify_Fly_END()
 void UCEnemyAnim::AnimNotify_Sleep_END()
 {
 	if (FSM) { FSM->Sleep_END(); }
+}
+
+void UCEnemyAnim::AnimNotify_Select_ATT()
+{
+	if (FSM) { FSM->OnAttackProcess(); }
 }
 
