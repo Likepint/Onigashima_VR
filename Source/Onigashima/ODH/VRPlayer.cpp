@@ -12,6 +12,7 @@
 #include "CVRPlayerAnim.h"
 #include "Components/StaticMeshComponent.h"
 #include "MotionControllerComponent.h"
+#include "Components/WidgetInteractionComponent.h"
 #include "CPick.h"
 #include "CBow.h"
 #include "CSpear.h"
@@ -20,6 +21,7 @@
 #include "CArrow.h"
 #include "Components/SphereComponent.h"
 #include "Components/ArrowComponent.h"
+#include "PJS/Widgets/CMenu.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -158,6 +160,9 @@ AVRPlayer::AVRPlayer()
         RightHandMesh->SetSkeletalMesh(Temp_RightHand.Object);
         RightHandMesh->SetRelativeRotation(FRotator(0, -90, 0));
     }
+
+    CHelpers::CreateComponent<UWidgetInteractionComponent>(this, &WidgetInteractionComponent, "WidgetInteractionComponent", RightSceneComp);
+
 }
 
 // Called when the game starts or when spawned
@@ -206,7 +211,13 @@ void AVRPlayer::BeginPlay()
         ArrowPool.Add(Ar);
     }
 
+    CheckNull(MenuFactory);
+    FActorSpawnParameters params;
+    params.Owner = this;
+    Menu = GetWorld()->SpawnActor<ACMenu>(MenuFactory, params);
     
+    CheckNull(Menu);
+    Menu->AttachToComponent(LeftSceneComp, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called every frame
@@ -330,6 +341,9 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
         // Build
         Build->OnBindEnhancedInputSystem(InputSystem);
+
+        // Inventory
+        Inventory->OnBindEnhancedInputSystem(InputSystem);
     }
 #pragma endregion
 }

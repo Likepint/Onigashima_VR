@@ -8,6 +8,7 @@
 #include "PJS/Widgets/CUserWidget_Craft.h"
 #include "Camera/CameraComponent.h"
 #include "PJS/Crafts/CItemBase.h"
+#include "Components/WidgetInteractionComponent.h"
 
 UCInventoryComponent::UCInventoryComponent()
 {
@@ -38,18 +39,17 @@ void UCInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 	CheckLookAt();
 
-	CLog::Print(bShowInventory);
-
 }
 
 void UCInventoryComponent::OnBindEnhancedInputSystem(UEnhancedInputComponent* InEnhancedInput)
 {
-	InEnhancedInput->BindAction(IA_Interact, ETriggerEvent::Started, this, &UCInventoryComponent::Interact);
+	InEnhancedInput->BindAction(IA_Interact, ETriggerEvent::Started, this, &UCInventoryComponent::OnInteract);
+	InEnhancedInput->BindAction(IA_Interact, ETriggerEvent::Completed, this, &UCInventoryComponent::OnInteractUI);
 	InEnhancedInput->BindAction(IA_Craft, ETriggerEvent::Started, this, &UCInventoryComponent::OnCraft);
 
 }
 
-void UCInventoryComponent::Interact(const FInputActionValue& InVal)
+void UCInventoryComponent::OnInteract(const FInputActionValue& InVal)
 {
 	if (bShowInventory)
 	{
@@ -62,6 +62,16 @@ void UCInventoryComponent::Interact(const FInputActionValue& InVal)
 
 		Target->InteractWith(OwnerCharacter);
 	}
+
+}
+
+void UCInventoryComponent::OnInteractUI(const FInputActionValue& InVal)
+{
+	UWidgetInteractionComponent* interaction = CHelpers::GetComponent<UWidgetInteractionComponent>(OwnerCharacter);
+	CheckNull(interaction);
+
+	interaction->PointerIndex = 1;
+	interaction->ReleasePointerKey(EKeys::E);
 
 }
 

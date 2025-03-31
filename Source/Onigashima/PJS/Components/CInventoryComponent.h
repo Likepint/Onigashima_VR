@@ -45,7 +45,8 @@ public:
 	virtual void OnBindEnhancedInputSystem(class UEnhancedInputComponent* InEnhancedInput) override;
 
 private:
-	void Interact(const struct FInputActionValue& InVal);
+	void OnInteract(const struct FInputActionValue& InVal);
+	void OnInteractUI(const struct FInputActionValue& InVal);
 	void OnCraft(const struct FInputActionValue& InVal);
 
 public:

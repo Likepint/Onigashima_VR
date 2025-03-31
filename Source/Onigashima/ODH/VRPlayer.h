@@ -31,6 +31,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UCInventoryComponent* Inventory;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ACMenu> MenuFactory;
+
+	UPROPERTY(VisibleAnywhere)
+	class ACMenu* Menu;
+
 public:
 	// Sets default values for this character's properties
 	AVRPlayer();
@@ -117,9 +123,12 @@ public: //HandScene
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UMotionControllerComponent* RightSceneComp;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UWidgetInteractionComponent* WidgetInteractionComponent;
 
-private: //Hands
-	UPROPERTY(EditDefaultsOnly)
+
+protected: //Hands
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	class USkeletalMeshComponent* LeftHandMesh;
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* LeftHandColli;
