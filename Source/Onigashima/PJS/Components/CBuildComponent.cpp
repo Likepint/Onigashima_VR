@@ -1,4 +1,4 @@
-#include "PJS/Components/CBuildComponent.h"
+﻿#include "PJS/Components/CBuildComponent.h"
 #include "Global.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
@@ -111,8 +111,11 @@ void UCBuildComponent::DelayBuild()
 
 void UCBuildComponent::LoopBuild()
 {
-	FVector location = OwnerCharacter->GetActorLocation();
-	FVector forward = OwnerCharacter->GetActorForwardVector();
+	UCameraComponent* camera = CHelpers::GetComponent<UCameraComponent>(OwnerCharacter);
+	CheckNull(camera);
+
+	FVector location = camera->GetComponentLocation();
+	FVector forward = camera->GetForwardVector();
 
 	FVector start = location + (forward * 350);
 	FVector end = location + (forward * 1000);
