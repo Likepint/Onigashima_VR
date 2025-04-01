@@ -6,6 +6,10 @@
 #include "Components/StaticMeshComponent.h"
 #include "Global.h"
 #include "../../../../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h"
+#include "GameFramework/Character.h"
+#include "PJS/Components/CInventoryComponent.h"
+#include "PJS/Crafts/CItem_Stone.h"
+#include "PJS/Crafts/CItem_Planks.h"
 
 
 // Sets default values
@@ -53,6 +57,13 @@ void ACAxe::SetCollision(bool bValue)
 	}
 }
 
+void ACAxe::BeginPlay()
+{
+	Super::BeginPlay();
+
+	OwnerCharacter = Cast<ACharacter>(GetOwner());
+}
+
 void ACAxe::AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	GEngine->AddOnScreenDebugMessage(3, 2.0f, FColor::Blue, TEXT("Axe Overlap!"));
@@ -60,5 +71,23 @@ void ACAxe::AxeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherAc
 	UGameplayStatics::PlaySoundAtLocation(this,AxeSound,GetActorLocation());
 
 	ChopEffect->Activate(true);
+
+	UCInventoryComponent* inventory = CHelpers::GetComponent<UCInventoryComponent>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	CheckNull(inventory);
+
+	if (ACItem_Stone* stone = Cast<ACItem_Stone>(OtherActor))
+	{
+		inventory->GetInventory().Add(stone->GetClass(), FMath::RandRange(1, 10));
+
+		return;
+	}
+
+	if (ACItem_Planks* planks = Cast<ACItem_Planks>(OtherActor))
+	{
+		inventory->GetInventory().Add(planks->GetClass(), FMath::RandRange(1, 10));
+
+		return;
+	}
+
 }
 

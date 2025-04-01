@@ -53,8 +53,6 @@ void UCUserWidget_Craft::RemoveIngredients(TMap<TSubclassOf<class ACItemBase>, i
 
 	for (auto& Ingredient : InIngredients)
 	{
-		FQueryResult result;
-
 		if (inventory->GetInventory().Find(Ingredient.Key))
 			inventory->RemoveFromInventory(Ingredient.Key, Ingredient.Value);
 	}
@@ -64,6 +62,8 @@ void UCUserWidget_Craft::RemoveIngredients(TMap<TSubclassOf<class ACItemBase>, i
 void UCUserWidget_Craft::CraftItem()
 {
 	CheckNull(HoveredItem);
+
+	CLog::Print(HoveredItem->GetName());
 
 	TMap<TSubclassOf<class ACItemBase>, int32> recipe = HoveredItem->Item->GetDefaultObject<ACItemBase>()->GetItemStruct().Recipe;
 	if (recipe.IsEmpty()) return;

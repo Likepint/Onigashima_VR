@@ -129,9 +129,9 @@ FQueryResult UCInventoryComponent::QueryInventory(TSubclassOf<class ACItemBase> 
 {
 	FQueryResult result;
 
-	if (Quantity >= *Inventory.Find(InItem))
+	if (*Inventory.Find(InItem) >= Quantity)
 	{
-		if (Inventory.Find(InItem) and Inventory[InItem] >= Quantity)
+		if (Inventory.Find(InItem))
 			result.bSuccess = true;
 		else result.bSuccess = false;
 
@@ -148,7 +148,7 @@ bool UCInventoryComponent::RemoveFromInventory(TSubclassOf<class ACItemBase> InI
 
 	if (result.bSuccess)
 	{
-		Inventory.Add(InItem, FMath::Clamp(Quantity - result.Quantity, 0, 9999));
+		Inventory.Add(InItem, FMath::Clamp(Inventory[InItem] - Quantity, 0, 9999));
 
 		return true;
 	}
