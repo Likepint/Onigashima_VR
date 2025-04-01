@@ -16,4 +16,11 @@ public:
 	ACItem();
 
 	int32 ItemNum;
+
+protected:
+	virtual void BeginPlay() override;
+
+protected:
+	class ACharacter* OwnerCharacter;
+
 };

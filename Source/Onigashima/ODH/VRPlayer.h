@@ -37,6 +37,16 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class ACMenu* Menu;
 
+private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ACItem_Bow> BowClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ACItem_Axe> AxeClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ACItem_Pick> PickClass;
+
 public:
 	// Sets default values for this character's properties
 	AVRPlayer();

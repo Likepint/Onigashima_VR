@@ -149,7 +149,7 @@ ACEnemy::ACEnemy()
 
 
 
-		ConstructorHelpers::FClassFinder<UAnimInstance>tmpAnim(TEXT("LevelSequence'/Game/KJY/Level/Sequence/SQ_Dragon_death.SQ_Dragon_death'"));
+		ConstructorHelpers::FClassFinder<UAnimInstance>tmpAnim(TEXT("LevelSequence'/Game/KJY/Level/Sequence/SQ_Dragon_death.SQ_Dragon_death_C'"));
 
 		if (tmpAnim.Succeeded()) { EnemyComponent->SetAnimInstanceClass(tmpAnim.Class); }
 		/// Script / LevelSequence.LevelSequence'/Game/KJY/Level/Sequence/SQ_Dragon_death.SQ_Dragon_death'

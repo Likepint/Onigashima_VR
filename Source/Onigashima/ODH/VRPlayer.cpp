@@ -22,6 +22,9 @@
 #include "Components/SphereComponent.h"
 #include "Components/ArrowComponent.h"
 #include "PJS/Widgets/CMenu.h"
+#include "PJS/Crafts/CItem_Bow.h"
+#include "PJS/Crafts/CItem_Axe.h"
+#include "PJS/Crafts/CItem_Pick.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -218,6 +221,7 @@ void AVRPlayer::BeginPlay()
     
     CheckNull(Menu);
     Menu->AttachToComponent(LeftSceneComp, FAttachmentTransformRules::KeepRelativeTransform);
+    Menu->SetActorHiddenInGame(true);
 }
 
 // Called every frame
@@ -530,24 +534,27 @@ void AVRPlayer::ItemCollisionOnOff(int32 ItemNum)
     case 1:
 //         Bow->SetVisibility(true);
 //         BowColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        if (*Inventory->GetInventory().Find(BowClass) == 0) break;
 	       SpawnBow->SetMesh(true);
 	       SpawnBow->SetCollision(true);
         break;
     case 2:
 //         Spear->SetVisibility(true);
 //         SpearColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-          SpawnSpear->SetMesh(true);
-          SpawnSpear->SetCollision(true);
+          //SpawnSpear->SetMesh(true);
+          //SpawnSpear->SetCollision(true);
         break;
     case 3:
 //         Axe->SetVisibility(true);
 //         AxeColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        if (*Inventory->GetInventory().Find(AxeClass) == 0) break;
            SpawnAxe->SetMesh(true);
            SpawnAxe->SetCollision(true);
         break;
     case 4:
 //         PickItem->SetVisibility(true);
 //         PickColli->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        if (*Inventory->GetInventory().Find(PickClass) == 0) break;
            SpawnPick->SetMesh(true);
            SpawnPick->SetCollision(true);
         break;

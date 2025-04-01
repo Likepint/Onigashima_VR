@@ -35,7 +35,7 @@ void ACItemBase::InteractWith(ACharacter* OwnerCharacter)
 	UCInventoryComponent* inventory = CHelpers::GetComponent<UCInventoryComponent>(OwnerCharacter);
 	CheckNull(inventory);
 
-	inventory->AddToInventory(this->GetClass(), 1);
+	inventory->AddToInventory(this->GetClass(), FMath::RandRange(1, 10));
 	
 	UCWidget_HUD* hud = Cast<UCWidget_HUD>(inventory->GetHUD());
 	CheckNull(hud);
