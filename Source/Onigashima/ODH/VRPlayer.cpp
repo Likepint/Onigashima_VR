@@ -211,13 +211,13 @@ void AVRPlayer::BeginPlay()
         ArrowPool.Add(Ar);
     }
 
-    CheckNull(MenuFactory);
-    FActorSpawnParameters params;
-    params.Owner = this;
-    Menu = GetWorld()->SpawnActor<ACMenu>(MenuFactory, params);
-    
-    CheckNull(Menu);
-    Menu->AttachToComponent(LeftSceneComp, FAttachmentTransformRules::KeepRelativeTransform);
+//     CheckNull(MenuFactory);
+//     FActorSpawnParameters params;
+//     params.Owner = this;
+//     Menu = GetWorld()->SpawnActor<ACMenu>(MenuFactory, params);
+//     
+//     CheckNull(Menu);
+//     Menu->AttachToComponent(LeftSceneComp, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called every frame

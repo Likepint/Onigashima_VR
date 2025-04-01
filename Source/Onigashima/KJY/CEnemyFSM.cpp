@@ -58,14 +58,14 @@ void UCEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	//TargetRotation();
 
 #pragma region LogMessageState
-	FString logMsgState = UEnum::GetValueAsString(mState);
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, logMsgState);
-
-	FString logMsgAtt = UEnum::GetValueAsString(mAttState);
-	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Green, logMsgAtt);
-
-	FString logMsgFly = UEnum::GetValueAsString(mFlyState);
-	GEngine->AddOnScreenDebugMessage(2, 1, FColor::Blue, logMsgFly);
+// 	FString logMsgState = UEnum::GetValueAsString(mState);
+// 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, logMsgState);
+// 
+// 	FString logMsgAtt = UEnum::GetValueAsString(mAttState);
+// 	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Green, logMsgAtt);
+// 
+// 	FString logMsgFly = UEnum::GetValueAsString(mFlyState);
+// 	GEngine->AddOnScreenDebugMessage(2, 1, FColor::Blue, logMsgFly);
 #pragma endregion
 
 	//스테이트 변경

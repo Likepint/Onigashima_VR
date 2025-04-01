@@ -107,7 +107,7 @@ void ACArrow::ArrowOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 {
 	bShooting = false;
 
-	UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
 
 	ACEnemy* enemy = Cast<ACEnemy>(OtherActor);
 	if (enemy)
