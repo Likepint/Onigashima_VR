@@ -48,7 +48,7 @@ public:
 	float Gravity = -980.0f;
 
 private:
-	int32 DamageAmount = 1;
+	int32 DamageAmount = 5;
 
 	float MinPower = 200;
 	float MaxPower = 2000;
