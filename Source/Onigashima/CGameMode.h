@@ -12,4 +12,21 @@ class ONIGASHIMA_API ACGameMode : public AGameModeBase
 public:
 	ACGameMode();
 
+public:
+	virtual void BeginPlay() override;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Sound")
+    void ChangeBackgroundMusic(USoundBase* NewSound);
+
+public:
+	UPROPERTY()
+	class USoundBase* GameSound;
+
+	UPROPERTY()
+    USoundBase* CombatSound;
+
+	UPROPERTY()
+    class UAudioComponent* CurrentAudioComponent;
+
 };

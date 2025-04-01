@@ -110,6 +110,7 @@ class UBoxComponent* Collision_15;
 
 	//시퀀스 테스트할 때 썼음.
 	bool bFortest = false;
+	bool bSoundCheck = false;
 
 #pragma region Fail
 public: // 총알 오브젝트풀

@@ -22,6 +22,7 @@
 #include "../ODH/CArrow.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "../CGameMode.h"
 
 
 
@@ -181,7 +182,6 @@ void ACEnemy::BeginPlay()
 
 	HP = MaxHP;
 
-
 	  UWorld* world = GetWorld();
 	  if (DeathSequence != nullptr && world != nullptr)
 	  {
@@ -190,13 +190,9 @@ void ACEnemy::BeginPlay()
 	  
 	  }
 
-
-
-
-	/*
 	Anim = Cast<UCEnemyAnim>(this->GetMesh()->GetAnimInstance());
 
-
+	/*
 	for (int i = 0; i< MaxBulletCnt; ++i)
 	{
 		FActorSpawnParameters spawnParams;
@@ -226,6 +222,31 @@ void ACEnemy::Tick(float DeltaTime)
 	//  	bFortest = true;
 	//  	PlayDeathSequence();
 	//  }
+
+	if ( bSoundCheck == false && Anim->bIsDetect==true)
+	{
+		ACGameMode* GameMode = Cast<ACGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+        if (GameMode)
+        {
+            // 전투 음악으로 변경
+            GameMode->ChangeBackgroundMusic(GameMode->CombatSound);
+			bSoundCheck = true;
+		}
+
+		// 기존 노래로 복구 (뒤쪽 조건 바꿔줘야함. 개인적으로 bIsDead- 클리어브금 / 클리어브금 종료 후 bIsClead 조건 넣어서 다른 브금으로 바뀌는 구조도 좋을 듯)
+		
+		// else if (bSoundCheck == true && Anim->bIsDetect == false)
+		// {
+		// 	if (GameMode){ GameMode->ChangeBackgroundMusic(GameMode->GameSound); }
+		// 
+		// 	bSoundCheck = false;
+		// }
+
+
+	}
+
+
 
 }
 
